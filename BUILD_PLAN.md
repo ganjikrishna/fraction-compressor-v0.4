@@ -25,6 +25,7 @@ Submission rules honored here:
 
 - Muse Spark reasons before answering and reasoning tokens count against max_tokens; use generous caps in benchmark calls.
 - Log every real Muse Spark call the benchmark makes (prompt, token counts, verdict) into results/ as it happens, so the Meta tooling use is evidenced in the repo, not just planned. (Muse Spark's own suggestion in its Oct 26 repo review. Soft budget from Vinay: keep Meta API use under the $100 alert level of the $150 credits where possible.)
+- Validation rule (Vinay, Oct 26): key results are cross-validated by Muse Spark AND Gemini, on top of the script reruns that produce them. If the two disagree, the disagreement is reported and investigated, never averaged away.
 - Models and weights are never committed (see .gitignore); data/ holds local downloads only.
 
 ## Expanded scope (Vinay, Oct 26: push the limits, not just another version)
