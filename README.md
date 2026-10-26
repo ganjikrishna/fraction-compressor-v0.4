@@ -1,10 +1,12 @@
 # Fraction Compressor v0.4
 
-**Factored 1-bit delta runtime with end-to-end task-accuracy benchmarks.**
+**One base model. Many tiny patch files. Swap a file, swap the behavior.**
 
 ![How Fraction Compressor v0.4 works](docs/how-it-works.svg)
 
-Fraction Compressor stores the difference between a base model and its fine-tuned version (the delta) at about 1 bit per weight, so one base model can serve many fine-tunes from tiny add-on files. Version 0.4 adds the factored runtime: the compressed delta is applied as two small matrix multiplies, Y = (X U) V^T, without ever rebuilding the full weight matrix, and it is measured end to end on real tasks, not just reconstruction error.
+## In plain words
+
+A fine-tuned model differs from its base model by a patch (the delta). A normal patch is almost as big as the model itself. Fraction Compressor stores that patch at about 1 bit per weight, and v0.4 runs it through a factored runtime: two small multiplies, Y = (X U) V^T, without ever rebuilding the full weight matrix. One layer stored the normal way takes 8.4 MB; our rank-32 file takes 152 KB, and the patch can be swapped live, in front of you.
 
 ## Built during the hackathon
 
@@ -14,10 +16,9 @@ Pre-existing work (not part of this submission): Fraction Compressor v0.1 to v0.
 
 ## What is in this repo
 
-- Factored-multiply runtime for compressed deltas (never materializes the full weight matrix)
-- End-to-end task-accuracy benchmark: base model vs base + full delta vs base + 1-bit compressed delta
-- A Meta model (Muse Spark, via the Meta Model API) folded into the same benchmark as a reference point
-- Results, notes, and the demo script for the submission
+- `src/factored.py`: the factored runtime (quantize a delta, price its storage, apply it factored). Tested, see `tests/test_factored.py`.
+- `fixtures/`: the quantum random fixture for the benchmark's audit sampling (IBM Quantum hardware, backend and job logged in the file).
+- In progress: the end-to-end task benchmark (base vs full delta vs compressed delta), Muse Spark in the loop as task generator and judge, and the live hot-swap demo.
 
 ## Author and credits
 
