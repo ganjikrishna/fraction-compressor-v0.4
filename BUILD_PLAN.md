@@ -25,3 +25,14 @@ Submission rules honored here:
 3. Meta open weights in the comparison: Muse Spark Open (hosted via Baseten) joins the benchmark table, which also puts the project in contention for the Best Build on Meta Open Weight Models bonus.
 4. Reproducibility as a feature: every number in the README and demo is produced by a script in this repo that anyone can rerun.
 5. Submission craft: review the submission form in the first days, script the 3-minute demo from the start, post the demo on X at submission for the Most Viral bonus, and open the video with the required line separating pre-existing work from this week's build.
+
+## Resources we will use
+
+- Flash (Vinay's Ubuntu box): local small models for the factored-runtime experiments, plus Muse Glimmer 30B through NVIDIA NIM, which is already working there. Quality-critical orchestration stays on the Muse VM, which holds the Meta Model API connection.
+- Other AIs for design pressure-testing: the standing Gemini design-debate chat (Vinay's permission), used the same way as during prep, with anything adopted logged in NOTES.
+- Quantum component (honest and bounded): the benchmark's verification pass audits a subset of results, and that subset is chosen with true quantum random numbers generated on IBM Quantum hardware (free plan, ibm_fez). The backend, job, and seed are logged with the results. It is an audit-sampling method, not a speed claim.
+- Feedback for Meta: the submission includes a short section on what we learned about the Muse models themselves (for example, Muse Spark spends output budget on reasoning before answering), since the organizers say they want to learn where the tools need to improve.
+
+## Crediting
+
+Vinay K Ganji Krishna is the sole participant and author of record. The README credits Ember (Muse Spark) as the AI agent used for implementation, benchmarking, and documentation, the same way the event itself promotes building with the Muse Code agent. Ember is not listed as a team member.
