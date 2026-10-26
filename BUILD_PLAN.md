@@ -11,13 +11,14 @@ Submission rules honored here:
 2. End-to-end task-accuracy benchmark on the Signet probe sets (knowledge, instruction, math): base vs base + full delta vs base + sign/factored delta, so the compressed path is scored on task answers, not only weight error.
 3. Meta model in the loop: Muse Spark (Meta Model API) runs the same probe sets as a hosted reference, and Muse Spark Open is the planned open-weight candidate if time allows.
 4. Stretch, only if 1 to 3 are done: System Instruction Hot-Swap Test (base vs full delta vs sign delta on strict JSON-format prompts, scored by parseability).
-5. Nov 4 reserved for the 3-minute demo video and the submission writeup.
+5. Alien Sweep: a wide, automated search over compression recipes that a human would not normally pick, filtered in two stages and verified by rerun (full protocol in its own section below). This replaces the planned human rank sweep; it does not add a separate build.
+6. Nov 4 reserved for the 3-minute demo video and the submission writeup.
 
 ## Demo video plan (approved by Vinay, Oct 26)
 
 - Recorded on Muse's VM: a screen recording of the real demo running (terminal/browser capture). No camera, no laptop needed from Vinay.
 - Script first, timed to what is on screen. Voice added after: AI-generated narration mixed over the recording with ffmpeg (the same pipeline as the folk-tale factory, minus generated scenes).
-- Exactly 3 minutes. Opens with the required line stating what was pre-existing and what was built this week. Shape: 0:00 opening + problem; 0:30 the hot-swap moment; 1:30 benchmark numbers; 2:15 Muse Spark judging + quantum audit, one line each; 2:45 close.
+- Exactly 3 minutes. Opens with the required line stating what was pre-existing and what was built this week. Shape: 0:00 opening + problem; 0:30 the hot-swap moment; 1:30 benchmark numbers, including one Alien Sweep line (recipes tried, winner, held out result); 2:15 Muse Spark judging + quantum audit, one line each; 2:45 close.
 - Rough cut early (as soon as the hot-swap demo runs) for Vinay to watch and react; final cut Nov 2-3 once the real numbers are in; Nov 4 reserved for submission only. Vinay approves the final cut before anything is posted.
 
 ## Working notes
@@ -32,6 +33,20 @@ Submission rules honored here:
 3. Meta open weights in the comparison: Muse Spark Open (hosted via Baseten) joins the benchmark table, which also puts the project in contention for the Best Build on Meta Open Weight Models bonus.
 4. Reproducibility as a feature: every number in the README and demo is produced by a script in this repo that anyone can rerun.
 5. Submission craft: review the submission form in the first days, script the 3-minute demo from the start, post the demo on X at submission for the Most Viral bonus, and open the video with the required line separating pre-existing work from this week's build.
+6. Alien Sweep as the search story: Spark proposes recipes, the sweep tests them, and the demo reports how many recipes were tried and what the winner was. If the human recipe wins, that is the reported result, with the full search map published either way.
+
+## Alien Sweep (approved by Vinay, Oct 26)
+
+What it is, in plain words: instead of a person choosing a few sensible compression settings and testing those, an agent proposes many settings, including odd ones a person would skip, a script tests all of them, and only the ones that pass a fresh rerun count. The name comes from the October 2026 OpenAI math release, where mathematicians called the AI proofs alien math because the winning moves came from directions humans had not tried.
+
+How it runs:
+- Recipe generation: Muse Spark proposes recipes across rank per layer type, sign vs ternary deltas, and uneven bit budgets across layers. Every proposed recipe is logged with its reason, so the search count in the demo is a real count from a file, not a claim.
+- Stage 1, cheap filter: the fast matrix level benchmark scores every recipe on reconstruction error at exact accounted size. Only the top 5 recipes advance.
+- Stage 2, hard check: the top 5 run the end to end task benchmark (knowledge, instruction, math probes) on Flash. A recipe only counts if the benchmark script reruns it and it passes on task score, not only weight error.
+- Held out guard: Spark generates fresh probe tasks the search never saw. The winner must also pass those, so the sweep cannot win by memorizing the old 24 probe items.
+- Honest outcome rule: if no alien recipe beats the human rank 32 recipe, the result is reported that way and the search map is still published. No winner is named in the demo script until Stage 2 and the held out check are both done.
+
+Where it fits the schedule: the rank sweep was already an early experiment in this plan. The Alien Sweep widens that same slot. Stage 1 is cheap CPU work on the VM; Stage 2 is only 5 recipes on Flash. Nov 4 stays reserved.
 
 ## Resources we will use
 
