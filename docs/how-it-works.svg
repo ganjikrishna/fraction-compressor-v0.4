@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="470" viewBox="0 0 1240 470" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1240" height="470" fill="#ffffff"/>
+  <text x="620" y="42" text-anchor="middle" font-size="26" font-weight="700" fill="#111111">How Fraction Compressor v0.4 works</text>
+  <text x="620" y="70" text-anchor="middle" font-size="15" fill="#555555">One frozen base model, many tiny patch files, swapped live.</text>
+
+  <!-- Box 1: base model -->
+  <rect x="30" y="110" width="240" height="130" rx="12" fill="#eef4ff" stroke="#3b6fd4" stroke-width="2"/>
+  <text x="150" y="152" text-anchor="middle" font-size="18" font-weight="700" fill="#173a75">Base model</text>
+  <text x="150" y="180" text-anchor="middle" font-size="14" fill="#333333">frozen, shared,</text>
+  <text x="150" y="200" text-anchor="middle" font-size="14" fill="#333333">loaded once</text>
+
+  <text x="292" y="185" text-anchor="middle" font-size="30" font-weight="700" fill="#111111">+</text>
+
+  <!-- Box 2: delta file -->
+  <rect x="320" y="110" width="290" height="130" rx="12" fill="#fff4e5" stroke="#d48806" stroke-width="2"/>
+  <text x="465" y="148" text-anchor="middle" font-size="18" font-weight="700" fill="#7a4a00">Tiny delta file (.bin)</text>
+  <text x="465" y="176" text-anchor="middle" font-size="14" fill="#333333">signs at 1 bit each + small factors</text>
+  <text x="465" y="198" text-anchor="middle" font-size="14" fill="#333333">152 KB for one 2048 x 2048 layer</text>
+  <text x="465" y="220" text-anchor="middle" font-size="14" fill="#333333">swap the file, swap the behavior</text>
+
+  <text x="640" y="185" text-anchor="middle" font-size="26" font-weight="700" fill="#111111">&#8594;</text>
+
+  <!-- Box 3: runtime -->
+  <rect x="670" y="110" width="290" height="130" rx="12" fill="#eafbea" stroke="#2e9e4f" stroke-width="2"/>
+  <text x="815" y="148" text-anchor="middle" font-size="18" font-weight="700" fill="#14532d">Factored runtime</text>
+  <text x="815" y="176" text-anchor="middle" font-size="14" fill="#333333">two small multiplies</text>
+  <text x="815" y="198" text-anchor="middle" font-size="14" fill="#333333">Y = (X U) V^T</text>
+  <text x="815" y="220" text-anchor="middle" font-size="14" fill="#333333">never rebuilds the full matrix</text>
+
+  <text x="990" y="185" text-anchor="middle" font-size="26" font-weight="700" fill="#111111">&#8594;</text>
+
+  <!-- Box 4: output -->
+  <rect x="1020" y="110" width="200" height="130" rx="12" fill="#f3e8ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="1120" y="152" text-anchor="middle" font-size="18" font-weight="700" fill="#4c1d95">Specialized</text>
+  <text x="1120" y="180" text-anchor="middle" font-size="18" font-weight="700" fill="#4c1d95">behavior</text>
+  <text x="1120" y="208" text-anchor="middle" font-size="14" fill="#333333">on the spot</text>
+
+  <!-- Size contrast -->
+  <text x="30" y="300" font-size="16" font-weight="700" fill="#111111">Same layer, stored two ways</text>
+  <text x="30" y="338" font-size="14" fill="#333333">Full patch (fp16)</text>
+  <rect x="220" y="322" width="900" height="22" fill="#c9d6f2"/>
+  <text x="1130" y="338" font-size="14" fill="#333333">8.4 MB</text>
+  <text x="30" y="378" font-size="14" fill="#333333">Ours (rank 32)</text>
+  <rect x="220" y="362" width="17" height="22" fill="#d48806"/>
+  <text x="248" y="378" font-size="14" fill="#333333">152 KB, about 55x smaller, 0.30 bits per weight</text>
+
+  <text x="620" y="435" text-anchor="middle" font-size="14" fill="#555555">Numbers from this repo's tested scaffold: one 2048 x 2048 weight matrix, factored runtime, rank 32.</text>
+</svg>

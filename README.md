@@ -2,6 +2,8 @@
 
 **Factored 1-bit delta runtime with end-to-end task-accuracy benchmarks.**
 
+![How Fraction Compressor v0.4 works](docs/how-it-works.svg)
+
 Fraction Compressor stores the difference between a base model and its fine-tuned version (the delta) at about 1 bit per weight, so one base model can serve many fine-tunes from tiny add-on files. Version 0.4 adds the factored runtime: the compressed delta is applied as two small matrix multiplies, Y = (X U) V^T, without ever rebuilding the full weight matrix, and it is measured end to end on real tasks, not just reconstruction error.
 
 ## Built during the hackathon
