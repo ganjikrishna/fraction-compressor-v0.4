@@ -36,3 +36,10 @@ Submission rules honored here:
 ## Crediting
 
 Vinay K Ganji Krishna is the sole participant and author of record. The README credits Ember (Muse Spark) as the AI agent used for implementation, benchmarking, and documentation, the same way the event itself promotes building with the Muse Code agent. Ember is not listed as a team member.
+
+## Design input from the Gemini debate chat (Oct 26)
+
+- Rank tuning beats bit-unpacking kernels. Kernels are a rabbit hole for a 10-day solo build; plain numpy unpacking is enough. Rank calibration is existential: too low and the delta is powerless, too high and the file-size story dies. A rank sweep is an early experiment.
+- Quarantine the quantum dependency: pull one large batch of quantum random numbers from IBM hardware at the start, log backend and seed, freeze it as a static fixture. No live quantum calls during crunch or demo.
+- The demo contrast must be stark: same prompt, base model fails it, the tiny delta file (size on screen) swaps in, same prompt now succeeds. The strict-JSON instruction prompt is the natural centerpiece.
+- Probe sets: sharp archetypes carry the demo; the full Signet sets still carry the benchmark table, because reproducible numbers are the credibility.
