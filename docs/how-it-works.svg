@@ -15,7 +15,7 @@
   <rect x="320" y="110" width="290" height="130" rx="12" fill="#fff4e5" stroke="#d48806" stroke-width="2"/>
   <text x="465" y="148" text-anchor="middle" font-size="18" font-weight="700" fill="#7a4a00">Tiny delta file (.bin)</text>
   <text x="465" y="176" text-anchor="middle" font-size="14" fill="#333333">signs at 1 bit each + small factors</text>
-  <text x="465" y="198" text-anchor="middle" font-size="14" fill="#333333">152 KB for one 2048 x 2048 layer</text>
+  <text x="465" y="198" text-anchor="middle" font-size="14" fill="#333333">144 KB for one 2048 x 2048 layer</text>
   <text x="465" y="220" text-anchor="middle" font-size="14" fill="#333333">swap the file, swap the behavior</text>
 
   <text x="640" y="185" text-anchor="middle" font-size="26" font-weight="700" fill="#111111">&#8594;</text>
@@ -42,7 +42,7 @@
   <text x="1130" y="338" font-size="14" fill="#333333">8.4 MB</text>
   <text x="30" y="378" font-size="14" fill="#333333">Ours (rank 32)</text>
   <rect x="220" y="362" width="17" height="22" fill="#d48806"/>
-  <text x="248" y="378" font-size="14" fill="#333333">152 KB, about 55x smaller, 0.30 bits per weight</text>
+  <text x="248" y="378" font-size="14" fill="#333333">144 KB, about 57x smaller, 0.28 bits per weight</text>
 
   <text x="620" y="435" text-anchor="middle" font-size="14" fill="#555555">Numbers from this repo's tested scaffold: one 2048 x 2048 weight matrix, factored runtime, rank 32.</text>
 </svg>

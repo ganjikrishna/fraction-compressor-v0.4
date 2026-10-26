@@ -12,8 +12,11 @@ Storage format (what :func:`storage_bytes` prices):
   scale per row of ``U``. The sign pattern is the part that carries the
   delta's structure at 1 bit per entry.
 - ``V`` is stored in fp16.
-- One fp32 scale per row of the original matrix ``D`` (folded into ``V``
-  at apply time in this scaffold; priced separately for honesty).
+
+That is the whole format; :func:`storage_bytes` prices exactly those
+pieces and nothing else. Compression itself is offline work that uses
+the full delta once; the factored form is what gets stored and read at
+run time.
 
 This is a research scaffold, not a kernel: factors are kept in float in
 memory, and :func:`pack_signs` / :func:`unpack_signs` show the exact bit
@@ -56,7 +59,7 @@ def quantize_delta(delta: np.ndarray, rank: int) -> dict:
                  the stored 1-bit structure; see ``U_signs_packed``)
       V          (n, rank) float, stored as fp16 on disk
       U_signs_packed  bytes of the packed sign layout for U
-      row_scales (m,) fp32 per-row scales of the original matrix
+      row_scales_u (m,) fp32 per-row scales of U
       rank, shape
     """
     delta = np.asarray(delta, dtype=np.float64)
@@ -75,18 +78,14 @@ def quantize_delta(delta: np.ndarray, rank: int) -> dict:
     row_scales_u = np.mean(np.abs(U_svd), axis=1)
     U = signs * row_scales_u[:, None]
 
-    # Least-squares refit of V against the fixed signed U, then fold the
-    # original per-row scale bookkeeping in: row_scales of D are reported
-    # separately (priced in storage) but not needed for the apply path.
+    # Least-squares refit of V against the fixed signed U.
     V = (np.linalg.pinv(U) @ delta).T  # (n, rank)
-    row_scales = np.mean(np.abs(delta), axis=1)
 
     return {
         "U": U,
         "V": V,
         "U_signs_packed": pack_signs(U),
         "row_scales_u": row_scales_u.astype(np.float32),
-        "row_scales": row_scales.astype(np.float32),
         "rank": rank,
         "shape": (m, n),
     }
@@ -108,9 +107,8 @@ def storage_bytes(rank: int, shape: tuple[int, int]) -> int:
     - U signs: m * rank bits
     - U per-row scales: m * 4 bytes (fp32)
     - V: n * rank * 2 bytes (fp16)
-    - per-row scales of the original matrix: m * 4 bytes (fp32)
     """
     m, n = shape
     sign_bits = m * rank
     sign_bytes = (sign_bits + 7) // 8
-    return sign_bytes + 4 * m + 2 * n * rank + 4 * m
+    return sign_bytes + 4 * m + 2 * n * rank
