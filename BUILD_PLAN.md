@@ -17,3 +17,11 @@ Submission rules honored here:
 
 - Muse Spark reasons before answering and reasoning tokens count against max_tokens; use generous caps in benchmark calls.
 - Models and weights are never committed (see .gitignore); data/ holds local downloads only.
+
+## Expanded scope (Vinay, Oct 26: push the limits, not just another version)
+
+1. Live hot-swap demo as the centerpiece: one base model, tiny 1-bit delta files swapped in live, behavior changes on the spot, file sizes shown side by side. This is the moment the demo video is built around.
+2. Muse Spark inside the product loop: Spark (Meta Model API) generates fresh probe tasks, runs the compressed vs full comparison, and writes the verdicts. The benchmark is agentic, not a static script output.
+3. Meta open weights in the comparison: Muse Spark Open (hosted via Baseten) joins the benchmark table, which also puts the project in contention for the Best Build on Meta Open Weight Models bonus.
+4. Reproducibility as a feature: every number in the README and demo is produced by a script in this repo that anyone can rerun.
+5. Submission craft: review the submission form in the first days, script the 3-minute demo from the start, post the demo on X at submission for the Most Viral bonus, and open the video with the required line separating pre-existing work from this week's build.
