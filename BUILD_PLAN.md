@@ -59,6 +59,8 @@ Where it fits the schedule: the rank sweep was already an early experiment in th
 
 ## Resources we will use
 
+- AI compute (Vinay, Oct 26): use all of it. Meta Model API credits fund Muse Spark as task generator, judge, AND independent validator of results; Gemini covers design debate and repo review; Flash local models run the heavy benchmarks. The free credits exist to be spent on this build. Real-money charges beyond the credits still need Vinay's tap.
+
 - Flash (Vinay's Ubuntu box): local small models for the factored-runtime experiments, plus Muse Glimmer 30B through NVIDIA NIM, which is already working there. Quality-critical orchestration stays on the Muse VM, which holds the Meta Model API connection.
 - Other AIs for design pressure-testing: the standing Gemini design-debate chat (Vinay's permission), used the same way as during prep, with anything adopted logged in NOTES.
 - Quantum component (honest and bounded): the benchmark's verification pass audits a subset of results, and that subset is chosen with true quantum random numbers generated on IBM Quantum hardware (free plan, ibm_fez). The backend, job, and seed are logged with the results. It is an audit-sampling method, not a speed claim.
