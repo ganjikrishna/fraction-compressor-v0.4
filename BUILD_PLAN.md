@@ -13,6 +13,13 @@ Submission rules honored here:
 4. Stretch, only if 1 to 3 are done: System Instruction Hot-Swap Test (base vs full delta vs sign delta on strict JSON-format prompts, scored by parseability).
 5. Nov 4 reserved for the 3-minute demo video and the submission writeup.
 
+## Demo video plan (approved by Vinay, Oct 26)
+
+- Recorded on Muse's VM: a screen recording of the real demo running (terminal/browser capture). No camera, no laptop needed from Vinay.
+- Script first, timed to what is on screen. Voice added after: AI-generated narration mixed over the recording with ffmpeg (the same pipeline as the folk-tale factory, minus generated scenes).
+- Exactly 3 minutes. Opens with the required line stating what was pre-existing and what was built this week. Shape: 0:00 opening + problem; 0:30 the hot-swap moment; 1:30 benchmark numbers; 2:15 Muse Spark judging + quantum audit, one line each; 2:45 close.
+- Rough cut early (as soon as the hot-swap demo runs) for Vinay to watch and react; final cut Nov 2-3 once the real numbers are in; Nov 4 reserved for submission only. Vinay approves the final cut before anything is posted.
+
 ## Working notes
 
 - Muse Spark reasons before answering and reasoning tokens count against max_tokens; use generous caps in benchmark calls.
