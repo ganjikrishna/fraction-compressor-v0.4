@@ -37,16 +37,25 @@ Submission rules honored here:
 
 ## Alien Sweep (approved by Vinay, Oct 26)
 
+Vinay's condition (Oct 26): use it only if it makes sense once the build starts. If the recipe space outruns what the runtime can run and verify by Nov 4, fall back to the human rank sweep and report that plainly in the results.
+
 What it is, in plain words: instead of a person choosing a few sensible compression settings and testing those, an agent proposes many settings, including odd ones a person would skip, a script tests all of them, and only the ones that pass a fresh rerun count. The name comes from the October 2026 OpenAI math release, where mathematicians called the AI proofs alien math because the winning moves came from directions humans had not tried.
 
 How it runs:
-- Recipe generation: Muse Spark proposes recipes across rank per layer type, sign vs ternary deltas, and uneven bit budgets across layers. Every proposed recipe is logged with its reason, so the search count in the demo is a real count from a file, not a claim.
+- Recipe generation: Muse Spark proposes recipes as per-layer rank maps under a fixed total size budget (uneven budgets across layers included). Recipes are strict JSON, layer name to integer rank only; anything needing a new code path (ternary deltas, variable bit width) is out of bounds for the sweep. Every proposed recipe is logged with its reason, so the search count in the demo is a real count from a file, not a claim.
 - Stage 1, cheap filter: the fast matrix level benchmark scores every recipe on reconstruction error at exact accounted size. Only the top 5 recipes advance.
 - Stage 2, hard check: the top 5 run the end to end task benchmark (knowledge, instruction, math probes) on Flash. A recipe only counts if the benchmark script reruns it and it passes on task score, not only weight error.
 - Held out guard: Spark generates fresh probe tasks the search never saw. The winner must also pass those, so the sweep cannot win by memorizing the old 24 probe items.
 - Honest outcome rule: if no alien recipe beats the human rank 32 recipe, the result is reported that way and the search map is still published. No winner is named in the demo script until Stage 2 and the held out check are both done.
 
 Where it fits the schedule: the rank sweep was already an early experiment in this plan. The Alien Sweep widens that same slot. Stage 1 is cheap CPU work on the VM; Stage 2 is only 5 recipes on Flash. Nov 4 stays reserved.
+
+### Gemini debate on Alien Sweep (Oct 26, via the Gemini API)
+
+- Verdict: GO, but only inside a strict boundary. A recipe is a per-layer rank distribution under a fixed total size budget, which needs zero new runtime code (the same SVD and packing path, different rank integers per layer). The moment a recipe needs a new code path, it is out.
+- Technique adopted: precompute the SVD once per matrix up to the max rank, then Stage 1 scores each recipe by slicing the precomputed factors. Hundreds of recipes then cost seconds, not one SVD per recipe.
+- Failure modes Gemini raised, all accepted: low matrix error does not guarantee task success (that is why Stage 2 exists); Spark can emit invalid layer names or out-of-range ranks (strict JSON schema check before anything runs); Stage 2 CPU time per config is the real budget risk; the winner may be the boring uniform recipe (covered by the honest outcome rule).
+- Day 2 go/no-go checks. Any failure means fall back to the human rank sweep and report it: (1) Spark produces 5 schema-valid recipe JSONs quickly, layer-to-rank maps only; (2) the one-time SVD precompute for the target model finishes in under 10 minutes; (3) Stage 1 scores the full recipe set in minutes via slicing; (4) one Stage 2 config completes the task benchmark inside the agreed time budget without memory thrash on Flash.
 
 ## Resources we will use
 
