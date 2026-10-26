@@ -17,6 +17,12 @@ Pre-existing work (not part of this submission): Fraction Compressor v0.1 to v0.
 - A Meta model (Muse Spark, via the Meta Model API) folded into the same benchmark as a reference point
 - Results, notes, and the demo script for the submission
 
+## Author and credits
+
+Built by **Vinay K Ganji Krishna**, solo participant (Indie Developer track) and author of record.
+
+Implementation, benchmarking, and documentation were carried out with **Ember**, an AI agent powered by Muse Spark, working under the author's direction, the same way this event encourages building with Meta's Muse Code agent. Design pressure-testing also drew on a Gemini design-debate chat. Every result in this repository is produced by scripts in this repository and can be rerun.
+
 ## License
 
 MIT, (c) 2026 Vinay K Ganji Krishna. Methods are clean-room implementations from published papers; see the original repository's NOTICE for citations.
