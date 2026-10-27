@@ -1,0 +1,24 @@
+=== BUILD (uniform rank 32) ===
+PATCH SUMMARY
+  base model:         /home/vinay/qwen-test/data/qwen2.5-0.5b.safetensors
+  fine-tuned model:   /home/vinay/qwen-test/data/qwen2.5-0.5b-instruct.safetensors
+  ranks:              uniform rank 32 (embed=32, attn.q_proj=32, attn.k_proj=32, attn.v_proj=32, attn.o_proj=32, mlp.gate=32, mlp.up=32, mlp.down=32)
+  matrices patched:   169 (0 dropped at rank 0, 0 skipped: not a patched matrix or absent from one model)
+  patch byte price (factored format): 19,434,496 B
+  patch file on disk (.npz):          19,801,750 B (container overhead included)
+  full delta at fp16:                 987,922,432 B
+  compression: 50.8x smaller than the full delta
+  peak RSS: 4732 MB
+  wrote /home/vinay/fc-v04-sweep/make_patch/patch_uniform_rank32.npz
+
+=== VERIFY ===
+VERIFY /home/vinay/fc-v04-sweep/make_patch/patch_uniform_rank32.npz
+  patch header: base=qwen2.5-0.5b.safetensors, fine-tuned=qwen2.5-0.5b-instruct.safetensors, ranks: uniform rank 32, byte price 19,434,496 B
+  embed (model.embed_tokens.weight, rank 32): factored-vs-dense max diff 3.553e-15; file-vs-fresh-quantize rel diff 2.561e-04
+  b12_attn_q_proj (model.layers.12.self_attn.q_proj.weight, rank 32): factored-vs-dense max diff 8.327e-17; file-vs-fresh-quantize rel diff 2.440e-04
+  b12_mlp_gate (model.layers.12.mlp.gate_proj.weight, rank 32): factored-vs-dense max diff 2.776e-16; file-vs-fresh-quantize rel diff 3.362e-04
+  b23_mlp_down (model.layers.23.mlp.down_proj.weight, rank 32): factored-vs-dense max diff 5.378e-17; file-vs-fresh-quantize rel diff 1.980e-04
+  worst factored-vs-dense max diff: 3.553e-15 (tolerance 1e-06)
+  worst file-vs-fresh rel diff:     3.362e-04 (tolerance 1e-02; the gap is the fp16 storage rounding of V, by design)
+  peak RSS: 4841 MB
+VERIFY: PASS
