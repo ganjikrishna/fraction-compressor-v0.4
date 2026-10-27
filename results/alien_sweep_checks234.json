@@ -1,0 +1,150 @@
+{
+  "check_set": "alien_sweep_day2_gonogo_checks_2_3_4",
+  "date": "2026-10-27",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, python3.14 + numpy 2.5.4)",
+  "target_model_pair": {
+    "base": "~/qwen-test/data/qwen2.5-0.5b.safetensors (Qwen2.5-0.5B, BF16)",
+    "instruct": "~/qwen-test/data/qwen2.5-0.5b-instruct.safetensors (Qwen2.5-0.5B-Instruct, BF16)",
+    "matrices": "embedding + 24 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 169 delta matrices"
+  },
+  "overall_verdict": "GO (checks 2, 3, 4 all pass; check 1 passed earlier today)",
+  "checks": [
+    {
+      "check": 2,
+      "name": "one-time SVD precompute finishes under 10 minutes",
+      "verdict": "PASS",
+      "total_s": 18.5,
+      "budget_s": 600,
+      "peak_rss_mb": 1847.5,
+      "n_matrices": 169,
+      "method": "randomized SVD, fp32, oversampling 12, 2 power iterations, seed 20261027",
+      "per_layer_name_totals": {
+        "attn.k_proj": {
+          "matrices": 24,
+          "total_s": 0.12
+        },
+        "attn.o_proj": {
+          "matrices": 24,
+          "total_s": 0.93
+        },
+        "attn.q_proj": {
+          "matrices": 24,
+          "total_s": 0.79
+        },
+        "attn.v_proj": {
+          "matrices": 24,
+          "total_s": 0.1
+        },
+        "embed": {
+          "matrices": 1,
+          "total_s": 9.61
+        },
+        "mlp.down": {
+          "matrices": 24,
+          "total_s": 2.12
+        },
+        "mlp.gate": {
+          "matrices": 24,
+          "total_s": 2.35
+        },
+        "mlp.up": {
+          "matrices": 24,
+          "total_s": 2.42
+        }
+      },
+      "embed_matrix": {
+        "shape": [
+          151936,
+          896
+        ],
+        "rank_stored": 80,
+        "total_s": 9.608
+      },
+      "slowest_matrix": {
+        "key": "embed",
+        "shape": [
+          151936,
+          896
+        ],
+        "total_s": 9.608
+      },
+      "precompute_artifact": "~/fc-v04-sweep/precompute.npz on Flash (singular values + squared Frobenius norms per matrix)"
+    },
+    {
+      "check": 3,
+      "name": "Stage 1 scores the full recipe set in minutes via slicing",
+      "verdict": "PASS",
+      "n_recipes_scored": 5,
+      "scoring_s": 0.1396,
+      "metric": "total relative Frobenius reconstruction error across all 169 delta matrices (embedding + all blocks), sliced from the precomputed singular values",
+      "ranking": [
+        {
+          "name": "embed_guardian",
+          "relative_frobenius_error": 0.90216
+        },
+        {
+          "name": "balanced_uneven",
+          "relative_frobenius_error": 0.906639
+        },
+        {
+          "name": "mlp_behemoth",
+          "relative_frobenius_error": 0.908486
+        },
+        {
+          "name": "attn_output_focus",
+          "relative_frobenius_error": 0.910212
+        },
+        {
+          "name": "sparse_extremes",
+          "relative_frobenius_error": 0.963903
+        }
+      ],
+      "human_uniform_rank32_baseline": 0.905687,
+      "winner": "embed_guardian",
+      "note": "Stage 1 winner embed_guardian (0.902160) also edges out the human uniform rank-32 recipe (0.905687) on this matrix-level metric. Matrix error is only the Stage 1 filter; the plan's honest-outcome rule still applies at Stage 2."
+    },
+    {
+      "check": 4,
+      "name": "one Stage 2 config completes the task benchmark inside budget without memory thrash",
+      "verdict": "PASS",
+      "recipe": "embed_guardian",
+      "block": 12,
+      "chain": [
+        "attn.q_proj",
+        "attn.o_proj",
+        "mlp.gate",
+        "mlp.down"
+      ],
+      "rank_map": {
+        "attn.q_proj": 40,
+        "attn.o_proj": 60,
+        "mlp.gate": 15,
+        "mlp.down": 50
+      },
+      "n_probes": 120,
+      "wall_s": 3.36,
+      "peak_rss_mb": 523.4,
+      "budget": {
+        "wall_s_max": 600,
+        "peak_rss_mb_max": 6144
+      },
+      "configs_accuracy": {
+        "base": 0.675,
+        "full_delta": 1.0,
+        "factored_delta": 0.7
+      },
+      "sizes": {
+        "full_delta_fp16_bytes": 20643840,
+        "factored_bytes": 488208,
+        "compression_ratio": 42.2849277357192
+      },
+      "note": "Feasibility gate only: real block-12 delta matrices at the winner's ranks ran end to end through src/bench.py (including factored.quantize_delta's SVD + least-squares refit) in 3.36 s at 523 MB peak. Probe targets were teacher-built from the full-delta config (full_delta accuracy 1.0 by construction) and the tanh chain saturates, so the logprob gap is negative and gap_closed is null; these probe numbers are NOT quality evidence. The full Stage 2 (real probe sets against the model, top 5 recipes) is separate later work."
+    }
+  ],
+  "scripts": [
+    "examples/alien_sweep_precompute.py",
+    "examples/alien_sweep_stage1.py",
+    "examples/alien_sweep_stage2_one.py"
+  ],
+  "api_calls": "none (compute only); results/api_usage_log.jsonl unchanged"
+}
