@@ -26,6 +26,7 @@ Submission rules honored here:
 - Muse Spark reasons before answering and reasoning tokens count against max_tokens; use generous caps in benchmark calls.
 - Log every real Muse Spark call the benchmark makes (prompt, token counts, verdict) into results/ as it happens, so the Meta tooling use is evidenced in the repo, not just planned. (Muse Spark's own suggestion in its Oct 26 repo review. Soft budget from Vinay: keep Meta API use under the $100 alert level of the $150 credits where possible.)
 - Validation rule (Vinay, Oct 26): key results are cross-validated by Muse Spark AND Gemini, on top of the script reruns that produce them. If the two disagree, the disagreement is reported and investigated, never averaged away.
+- Credit order and tracking (Vinay, Oct 26, 10:23 PM): the Baseten credits may not be available after the hackathon, so Baseten carries the heavy lifting first while it lasts: bulk benchmark runs, sweeps, and repeated evaluations on Muse Spark Open. The Meta Model API is used as needed for task generation, judging, and validation. Every Baseten and Meta call is tracked in results/ with provider, model, time, purpose, and token counts, so the usage totals can be shared with the organizers in the submission and checked against the credit balances.
 - Models and weights are never committed (see .gitignore); data/ holds local downloads only.
 
 ## Expanded scope (Vinay, Oct 26: push the limits, not just another version)
@@ -61,7 +62,7 @@ Where it fits the schedule: the rank sweep was already an early experiment in th
 
 ## Resources we will use
 
-- AI compute (Vinay, Oct 26): use all of it. Meta Model API credits fund Muse Spark as task generator, judge, AND independent validator of results; Gemini covers design debate and repo review; Flash local models run the heavy benchmarks. The free credits exist to be spent on this build. Real-money charges beyond the credits still need Vinay's tap.
+- AI compute (Vinay, Oct 26): use all of it. Meta Model API credits fund Muse Spark as task generator, judge, AND independent validator of results; Gemini covers design debate and repo review; Flash local models run the heavy benchmarks. The free credits exist to be spent on this build. Order of use (Vinay, Oct 26 night): Baseten first for the heavy lifting, because its credits may end with the hackathon; the Meta Model API fills in as needed. Real-money charges beyond the credits still need Vinay's tap.
 
 - Flash (Vinay's Ubuntu box): local small models for the factored-runtime experiments, plus Muse Glimmer 30B through NVIDIA NIM, which is already working there. Quality-critical orchestration stays on the Muse VM, which holds the Meta Model API connection.
 - Other AIs for design pressure-testing: the standing Gemini design-debate chat (Vinay's permission), used the same way as during prep, with anything adopted logged in NOTES.
