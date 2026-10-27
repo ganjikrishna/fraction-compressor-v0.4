@@ -20,6 +20,8 @@ Submission rules honored here:
 - Script first, timed to what is on screen. Voice added after: AI-generated narration mixed over the recording with ffmpeg (the same pipeline as the folk-tale factory, minus generated scenes).
 - Exactly 3 minutes. Opens with the required line stating what was pre-existing and what was built this week. Shape: 0:00 opening + problem; 0:30 the hot-swap moment; 1:30 benchmark numbers, including one Alien Sweep line (recipes tried, winner, held out result); 2:15 Muse Spark judging + quantum audit, one line each; 2:45 close.
 - Rough cut early (as soon as the hot-swap demo runs) for Vinay to watch and react; final cut Nov 2-3 once the real numbers are in; Nov 4 reserved for submission only. Vinay approves the final cut before anything is posted.
+- Simplicity rule (Vinay, Oct 27): keep the video as simple as possible. Plain words, no jargon without a one-line explanation, one idea at a time on screen. A newcomer watching once should understand what the tool does AND be able to pick it up and use it: the video shows the actual quickstart path (clone, run the quickstart, swap a patch file) in real steps, not just results.
+- One script line near the close answers the question people will ask (Vinay, Oct 27): how is this different from a memory or personality file and other tools on the market? Plain version: a memory file is words the model reads; our patch is numbers that change the model's math. The README carries the fuller comparison (memory/prompts, adapters, whole-model shrinking).
 
 ## Working notes
 

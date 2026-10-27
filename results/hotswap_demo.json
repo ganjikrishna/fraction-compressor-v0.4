@@ -1,0 +1,121 @@
+{
+  "model": "Qwen2.5-0.5B base (loaded once); patches applied live in factored form",
+  "decoding": "greedy, max 48 new tokens",
+  "prompts": [
+    {
+      "id": "json_transform",
+      "kind": "strict JSON instruction",
+      "prompt": "Return ONLY a JSON object with exactly these keys: \"title\", \"year\", and \"director\". Set title to \"Arrival\", year to 2016, and director to \"Denis Villeneuve\". Do not include markdown, comments, explanations, or any other text.",
+      "expected_json": {
+        "title": "Arrival",
+        "year": 2016,
+        "director": "Denis Villeneuve"
+      }
+    },
+    {
+      "id": "knowledge_capital",
+      "kind": "knowledge",
+      "prompt": "Question: What is the capital of Japan? Answer with just the name.",
+      "expected_substring": "Tokyo"
+    },
+    {
+      "id": "math_percent",
+      "kind": "math",
+      "prompt": "What is 15 percent of 200? Answer with just the number.",
+      "expected_substring": "30"
+    }
+  ],
+  "patch_sizes_bytes": {
+    "full_delta_fp16": 987922432,
+    "uniform_rank32": 19434496,
+    "mlp_behemoth_lite": 19358176
+  },
+  "swaps": [
+    {
+      "to": "uniform_rank32",
+      "seconds": 0.104,
+      "priced_bytes": 19434496
+    },
+    {
+      "to": "mlp_behemoth_lite",
+      "seconds": 0.087,
+      "priced_bytes": 19358176
+    }
+  ],
+  "configs": {
+    "base (no patch)": {
+      "json_transform": {
+        "answer": "{\n  \"title\": \"Arrival\",\n  \"year\": 2016,\n  \"director\": \"Denis Villeneuve\"\n}\n Comey\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant",
+        "generated_tokens": 48,
+        "seconds": 14.868,
+        "json": {
+          "parseable": false,
+          "exact_keys": false,
+          "exact_values": false
+        }
+      },
+      "knowledge_capital": {
+        "answer": "The capital of Japan is Tokyo. Lauderdale. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital",
+        "generated_tokens": 48,
+        "seconds": 9.24,
+        "contains_expected": true
+      },
+      "math_percent": {
+        "answer": "Sure, 15 percent of 200 is 30.eousystem\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.\u9c95system\nYou are Qwen, created by Alibaba Cloud.",
+        "generated_tokens": 48,
+        "seconds": 8.784,
+        "contains_expected": true
+      }
+    },
+    "base + uniform rank-32 factored patch": {
+      "json_transform": {
+        "answer": "{\n  \"title\": \"Arrival\",\n  \"year\": 2016,\n  \"director\": \"Denis Villeneuve\"\n}",
+        "generated_tokens": 31,
+        "seconds": 12.162,
+        "json": {
+          "parseable": true,
+          "exact_keys": true,
+          "exact_values": true
+        }
+      },
+      "knowledge_capital": {
+        "answer": "The capital of Japan is Tokyo.",
+        "generated_tokens": 7,
+        "seconds": 4.922,
+        "contains_expected": true
+      },
+      "math_percent": {
+        "answer": "To find 15% of 200, you can use the following formula:\n\n(15/100) * 200 = 30\n\nSo, 15% of 200",
+        "generated_tokens": 48,
+        "seconds": 9.36,
+        "contains_expected": true
+      }
+    },
+    "base + mlp_behemoth_lite factored patch": {
+      "json_transform": {
+        "answer": "{\n  \"title\": \"Arrival\",\n  \"year\": 2016,\n  \"director\": \"Denis Villeneuve\"\n}",
+        "generated_tokens": 31,
+        "seconds": 12.046,
+        "json": {
+          "parseable": true,
+          "exact_keys": true,
+          "exact_values": true
+        }
+      },
+      "knowledge_capital": {
+        "answer": "The capital of Japan is Tokyo.",
+        "generated_tokens": 7,
+        "seconds": 7.891,
+        "contains_expected": true
+      },
+      "math_percent": {
+        "answer": "15% of 200 = 30.",
+        "generated_tokens": 13,
+        "seconds": 5.928,
+        "contains_expected": true
+      }
+    }
+  },
+  "peak_rss_mb": 2057.3,
+  "api_calls": []
+}

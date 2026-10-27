@@ -1,0 +1,117 @@
+FRACTION COMPRESSOR v0.4 - LIVE HOT-SWAP DEMO
+Model: Qwen2.5-0.5B base, loaded ONCE. Patches swap live in memory.
+Decoding: greedy, max 48 new tokens per prompt. No API calls.
+Base model loaded in 0.8s (RSS 1971 MB)
+
+========================================================================
+CONFIG: base (no patch)
+========================================================================
+
+[strict JSON instruction] PROMPT: Return ONLY a JSON object with exactly these keys: "title", "year", and "director". Set title to "Arrival", year to 2016, and director to "Denis Villeneuve". Do not include markdown, comments, explanations, or any other text.
+ANSWER (48 tokens, 14.9s):
+{
+  "title": "Arrival",
+  "year": 2016,
+  "director": "Denis Villeneuve"
+}
+ Comey
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant
+JSON SCORE: parseable=False exact_keys=False exact_values=False
+
+[knowledge] PROMPT: Question: What is the capital of Japan? Answer with just the name.
+ANSWER (48 tokens, 9.2s):
+The capital of Japan is Tokyo. Lauderdale. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital
+CONTAINS EXPECTED ANSWER: True
+
+[math] PROMPT: What is 15 percent of 200? Answer with just the number.
+ANSWER (48 tokens, 8.8s):
+Sure, 15 percent of 200 is 30.eousystem
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.鲕system
+You are Qwen, created by Alibaba Cloud.
+CONTAINS EXPECTED ANSWER: True
+
+========================================================================
+PATCH SIZES (documented factored format, src/factored.py)
+========================================================================
+full delta, fp16:          987,922,432 B  (1.00x)
+uniform rank-32 patch:      19,434,496 B  (50.8x smaller)
+mlp_behemoth_lite patch:    19,358,176 B  (51.0x smaller)
+
+>>> SWAP: uniform rank-32 factored patch loaded live in 0.10s (169 matrices, dense delta never formed)
+
+========================================================================
+CONFIG: base + uniform rank-32 factored patch
+========================================================================
+
+[strict JSON instruction] PROMPT: Return ONLY a JSON object with exactly these keys: "title", "year", and "director". Set title to "Arrival", year to 2016, and director to "Denis Villeneuve". Do not include markdown, comments, explanations, or any other text.
+ANSWER (31 tokens, 12.2s):
+{
+  "title": "Arrival",
+  "year": 2016,
+  "director": "Denis Villeneuve"
+}
+JSON SCORE: parseable=True exact_keys=True exact_values=True
+
+[knowledge] PROMPT: Question: What is the capital of Japan? Answer with just the name.
+ANSWER (7 tokens, 4.9s):
+The capital of Japan is Tokyo.
+CONTAINS EXPECTED ANSWER: True
+
+[math] PROMPT: What is 15 percent of 200? Answer with just the number.
+ANSWER (48 tokens, 9.4s):
+To find 15% of 200, you can use the following formula:
+
+(15/100) * 200 = 30
+
+So, 15% of 200
+CONTAINS EXPECTED ANSWER: True
+
+>>> SWAP: mlp_behemoth_lite factored patch loaded live in 0.09s (145 matrices, dense delta never formed)
+
+========================================================================
+CONFIG: base + mlp_behemoth_lite factored patch
+========================================================================
+
+[strict JSON instruction] PROMPT: Return ONLY a JSON object with exactly these keys: "title", "year", and "director". Set title to "Arrival", year to 2016, and director to "Denis Villeneuve". Do not include markdown, comments, explanations, or any other text.
+ANSWER (31 tokens, 12.0s):
+{
+  "title": "Arrival",
+  "year": 2016,
+  "director": "Denis Villeneuve"
+}
+JSON SCORE: parseable=True exact_keys=True exact_values=True
+
+[knowledge] PROMPT: Question: What is the capital of Japan? Answer with just the name.
+ANSWER (7 tokens, 7.9s):
+The capital of Japan is Tokyo.
+CONTAINS EXPECTED ANSWER: True
+
+[math] PROMPT: What is 15 percent of 200? Answer with just the number.
+ANSWER (13 tokens, 5.9s):
+15% of 200 = 30.
+CONTAINS EXPECTED ANSWER: True
+
+========================================================================
+SCOREBOARD
+========================================================================
+
+base (no patch)
+  JSON parseable: NO (exact keys: NO, exact values: NO)
+  [json_transform] {\n  "title": "Arrival",\n  "year": 2016,\n  "director": "Denis Villeneuve"\n}\n Comey\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant
+  [knowledge_capital] The capital of Japan is Tokyo. Lauderdale. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital of Japan. Lauderdale is the capital
+  [math_percent] Sure, 15 percent of 200 is 30.eousystem\nYou are Qwen, created by Alibaba Cloud. You are a helpful assistant.鲕system\nYou are Qwen, created by Alibaba Cloud.
+
+base + uniform rank-32 factored patch
+  JSON parseable: YES (exact keys: YES, exact values: YES)
+  [json_transform] {\n  "title": "Arrival",\n  "year": 2016,\n  "director": "Denis Villeneuve"\n}
+  [knowledge_capital] The capital of Japan is Tokyo.
+  [math_percent] To find 15% of 200, you can use the following formula:\n\n(15/100) * 200 = 30\n\nSo, 15% of 200
+
+base + mlp_behemoth_lite factored patch
+  JSON parseable: YES (exact keys: YES, exact values: YES)
+  [json_transform] {\n  "title": "Arrival",\n  "year": 2016,\n  "director": "Denis Villeneuve"\n}
+  [knowledge_capital] The capital of Japan is Tokyo.
+  [math_percent] 15% of 200 = 30.
+
+Peak RSS for the whole run: 2057 MB
+Wrote hotswap_demo.json

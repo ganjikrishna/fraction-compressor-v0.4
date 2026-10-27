@@ -10,6 +10,12 @@ What "fraction" means here: not math fractions. A fine-tuned AI model is a base 
 
 A fine-tuned model differs from its base model by a patch (the delta). A normal patch is almost as big as the model itself. Fraction Compressor stores that patch in a factored form whose structure is kept as 1-bit signs, priced byte for byte by the code: 0.28 bits per weight for one large layer at rank 32 (the exact price depends on layer size and rank). v0.4 runs it through a factored runtime: two small multiplies, Y = (X U) V^T, without ever rebuilding the full weight matrix. One layer stored the normal way takes 8.4 MB; our rank-32 file takes 144 KB, and swapping patches is just loading a different small file. Compressing a patch is offline work done once with the full delta; the saving is in storage and at run time.
 
+## How this is different
+
+- **From memory files and system prompts** (the text files an AI agent reads, like a personality or memory file): those are words the model reads as instructions, they take up prompt space, and a later instruction can override them. A patch here is numbers applied to the model's own weights. The behavior changes in the math itself, uses no prompt space, and cannot be talked away.
+- **From an adapter (like LoRA):** an adapter is a new add-on trained for one task, usually stored at normal precision. This tool takes a fine-tune that already exists and squeezes the difference between it and its base model into a 1-bit factored file, so an existing fine-tune becomes a small patch you can swap.
+- **From shrinking a whole model (quantization):** that makes the one model smaller and slightly changes everything it does. This shrinks only the patch, so one base model stays exact and carries many behaviors, one small file each.
+
 ## Built during the hackathon
 
 This repository contains only work built during the Meta Global AI Developer Hackathon, October 26 to November 4, 2026 (Indie Developer track, Push the Frontier).
