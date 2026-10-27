@@ -1,0 +1,82 @@
+{
+  "n_probes": 120,
+  "layers": [
+    "layer0",
+    "layer1"
+  ],
+  "rank_map": {
+    "layer0": 8,
+    "layer1": 8
+  },
+  "sizes": {
+    "full_delta_fp16_bytes": 2176,
+    "factored_bytes": 952,
+    "compression_ratio": 2.2857142857142856
+  },
+  "configs": {
+    "base": {
+      "accuracy": 0.1,
+      "mean_target_logprob": -3.1146983229684317,
+      "per_bucket": {
+        "instruction": {
+          "n": 40,
+          "accuracy": 0.125,
+          "mean_target_logprob": -3.0394360178581765
+        },
+        "knowledge": {
+          "n": 40,
+          "accuracy": 0.125,
+          "mean_target_logprob": -3.1724786317324503
+        },
+        "math": {
+          "n": 40,
+          "accuracy": 0.05,
+          "mean_target_logprob": -3.132180319314665
+        }
+      }
+    },
+    "full_delta": {
+      "accuracy": 1.0,
+      "mean_target_logprob": -0.4468651483123371,
+      "per_bucket": {
+        "instruction": {
+          "n": 40,
+          "accuracy": 1.0,
+          "mean_target_logprob": -0.46001357991571795
+        },
+        "knowledge": {
+          "n": 40,
+          "accuracy": 1.0,
+          "mean_target_logprob": -0.408433501826578
+        },
+        "math": {
+          "n": 40,
+          "accuracy": 1.0,
+          "mean_target_logprob": -0.47214836319471515
+        }
+      }
+    },
+    "factored_delta": {
+      "accuracy": 0.45,
+      "mean_target_logprob": -1.6134569837115824,
+      "per_bucket": {
+        "instruction": {
+          "n": 40,
+          "accuracy": 0.375,
+          "mean_target_logprob": -1.8822966855104581
+        },
+        "knowledge": {
+          "n": 40,
+          "accuracy": 0.525,
+          "mean_target_logprob": -1.3832281980951442
+        },
+        "math": {
+          "n": 40,
+          "accuracy": 0.45,
+          "mean_target_logprob": -1.5748460675291442
+        }
+      }
+    }
+  },
+  "gap_closed": 0.5627193459914792
+}
