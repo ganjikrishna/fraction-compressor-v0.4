@@ -1,0 +1,107 @@
+{
+  "judging_pass": "spark_judging",
+  "date": "2026-10-27",
+  "judge": {
+    "provider": "meta-model-api",
+    "model": "muse-spark-1.3",
+    "time": "2026-10-27T18:20:17Z",
+    "prompt_tokens": 2384,
+    "completion_tokens": 5352,
+    "reasoning_tokens": 4085,
+    "total_tokens": 7736,
+    "role": "independent judge over the finished results; Spark saw only the numbers copied from the cited files, not the files themselves"
+  },
+  "sources_judged": [
+    "results/alien_sweep_stage2.json",
+    "results/alien_sweep_heldout.json",
+    "results/hotswap_demo.json"
+  ],
+  "metric": "gap_closed = (factored - base) / (full - base) on mean target logprob of the answer tokens; first-token accuracy reported alongside",
+  "verdicts": [
+    {
+      "claim_id": "C1",
+      "claim": "The factored patches are about 51x smaller than the full fp16 delta (987,922,432 B vs 19,434,496 B for uniform and 19,358,176 B for mlp_behemoth_lite).",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/hotswap_demo.json",
+      "values_relied_on": "full delta 987922432 B vs uniform 19434496 B (50.8x) vs mlp_behemoth_lite 19358176 B (51.0x)",
+      "note": "Division gives ~50.8x and ~51.0x, so about 51x smaller is exact."
+    },
+    {
+      "claim_id": "C2",
+      "claim": "On Stage 2 (24 Signet items), mlp_behemoth, a recipe proposed by Muse Spark, achieved the best overall factored score of all configs tested (gap_closed 0.457, logprob -10.507).",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_stage2.json",
+      "values_relied_on": "mlp_behemoth 0.4572 / -10.507 vs attn_output_focus 0.1895, uniform_rank32 0.1332, balanced_uneven 0.0453, embed_guardian 0.0260, sparse_extremes -0.1649",
+      "note": "mlp_behemoth has highest overall gap_closed and logprob among all six Stage 2 configs, and is listed as Spark-proposed."
+    },
+    {
+      "claim_id": "C3",
+      "claim": "mlp_behemoth's Stage 2 win was NOT byte-fair: at 21,719,776 B it used 11.8% more bytes than the human uniform recipe (19,434,496 B), which was the cheapest config.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_stage2.json",
+      "values_relied_on": "mlp_behemoth 21719776 B vs uniform 19434496 B; difference 2285280 B = 11.76%; cheapest of six is uniform",
+      "note": "11.76% rounds to 11.8% more bytes, and uniform is the smallest byte count in Stage 2."
+    },
+    {
+      "claim_id": "C4",
+      "claim": "On the fresh held-out items, mlp_behemoth still ranked first overall (gap_closed 0.108 vs uniform 0.016).",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_heldout.json",
+      "values_relied_on": "mlp_behemoth 0.1083 vs mlp_behemoth_lite 0.0947 vs uniform 0.0156",
+      "note": "Among the three configs tested held-out, mlp_behemoth is first overall on gap_closed."
+    },
+    {
+      "claim_id": "C5",
+      "claim": "The byte-matched variant mlp_behemoth_lite, priced at FEWER bytes than uniform (19,358,176 vs 19,434,496 B), still beat uniform on held-out overall gap_closed (0.095 vs 0.016), so the win survives byte-matching.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_heldout.json",
+      "values_relied_on": "lite 19358176 B vs uniform 19434496 B; lite gap_closed 0.0947 vs uniform 0.0156",
+      "note": "Lite uses fewer bytes than uniform yet beats it overall, so the overall lead survives byte-matching."
+    },
+    {
+      "claim_id": "C6",
+      "claim": "The winner's advantage shrank sharply on fresh items: overall gap_closed fell from 45.7% on the Stage 2 items to 10.8% on held-out items.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_stage2.json, results/alien_sweep_heldout.json",
+      "values_relied_on": "Stage 2 mlp_behemoth 0.4572 (45.7%) vs held-out mlp_behemoth 0.1083 (10.8%)",
+      "note": "Overall gap_closed falls by ~35 points, a sharp shrinkage on fresh items."
+    },
+    {
+      "claim_id": "C7",
+      "claim": "On held-out items the win is aggregate only: uniform actually won the knowledge bucket (gap_closed 0.272 vs mlp_behemoth 0.267), and no factored config recovered anything on instruction (all factored instruction gap_closed values are negative, i.e. worse than base).",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_heldout.json",
+      "values_relied_on": "knowledge uniform 0.2719 vs mlp_behemoth 0.2666; instruction mlp_behemoth -0.1698, lite -0.1767, uniform -0.2001",
+      "note": "Uniform wins knowledge bucket and all three instruction values are negative, worse than base."
+    },
+    {
+      "claim_id": "C8",
+      "claim": "Everything above is a logprob result only: first-token accuracy is 0.0 for nearly every factored config on both item sets, so no task-solving superiority can be claimed.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_stage2.json, results/alien_sweep_heldout.json",
+      "values_relied_on": "Stage 2 factored accuracy 0.0 for every config vs full 0.167; held-out factored 0.042, 0.0, 0.0 vs base 0.042 and full 0.167",
+      "note": "Nearly every factored accuracy is 0.0 and none exceeds base, so sweep accuracy shows no task-solving superiority."
+    },
+    {
+      "claim_id": "C9",
+      "claim": "The held-out math gap_closed values (11.771 for mlp_behemoth, 11.153 for lite) are ratio artifacts of the near-zero 0.0797-nat denominator, not evidence of math recovery.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/alien_sweep_heldout.json",
+      "values_relied_on": "math denominator 0.0797 nats (base -7.056 vs full -6.976); factored math -6.118, -6.167, -6.958 giving gap_closed 11.771, 11.153, 1.236",
+      "note": "Ratios >11 come from dividing ~0.94-nat gains by 0.0797, even exceeding full delta, so they are denominator artifacts."
+    },
+    {
+      "claim_id": "C10",
+      "claim": "In the live hot-swap demo, swapping a factored patch into the running base model visibly changed behavior on the same prompts: the base model failed the strict-JSON prompt (output not parseable) and rambled on the others, while both patched configs returned exactly the requested JSON and stopped, with swaps taking about 0.1 s.",
+      "verdict": "SUPPORTED",
+      "cited_file": "results/hotswap_demo.json",
+      "values_relied_on": "Prompt1 base parseable NO vs both patches YES with exact keys/values YES; Prompt2/3 base rambles vs patches correct; swaps 0.104s, 0.087s",
+      "note": "Base fails strict JSON and rambles while both patches return correct JSON and concise answers with ~0.1s swaps."
+    }
+  ],
+  "headline_question": {
+    "question": "Is 'leading recipe, conditionally validated' the honest headline?",
+    "answer": "yes. mlp_behemoth leads overall on both Stage 2 and held-out including byte-matched lite vs uniform, but the lead shrinks from 45.7% to 10.8%, loses knowledge to uniform, fails instruction, has no accuracy gain, and relies on a math ratio artifact. That pattern supports leading but only conditionally, not confirmed winner."
+  },
+  "demo_sentence": "mlp_behemoth leads on overall logprob in Stage 2 and held-out even when byte-matched, but the lead shrinks sharply on fresh items with no accuracy gain and no instruction recovery."
+}

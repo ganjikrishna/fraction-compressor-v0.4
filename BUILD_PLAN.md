@@ -55,6 +55,7 @@ How it runs:
 - Stage 2, hard check: the top 5 run the end to end task benchmark (knowledge, instruction, math probes) on Flash. A recipe only counts if the benchmark script reruns it and it passes on task score, not only weight error.
 - Held out guard: Spark generates fresh probe tasks the search never saw. The winner must also pass those, so the sweep cannot win by memorizing the old 24 probe items.
 - Honest outcome rule: if no alien recipe beats the human rank 32 recipe, the result is reported that way and the search map is still published. No winner is named in the demo script until Stage 2 and the held out check are both done.
+- Headline ruling (Oct 27, three-way validation; Vinay sided with Glimmer over Gemini and Spark): the headline recipe in our own prose (README, demo, submission) is mlp_behemoth_lite, the byte-fair leader: it beat the human uniform recipe on the fresh held-out tasks while using fewer bytes (gap closed 9.5% vs 1.6%). mlp_behemoth itself is named only as the byte-unfair parent (11.8% more bytes than uniform) whenever it appears. The validators' own records in results/ keep their original words; this ruling governs our wording, not their records.
 
 Where it fits the schedule: the rank sweep was already an early experiment in this plan. The Alien Sweep widens that same slot. Stage 1 is cheap CPU work on the VM; Stage 2 is only 5 recipes on Flash. Nov 4 stays reserved.
 

@@ -1,0 +1,675 @@
+{
+  "audit": "quantum-audited verification pass over results/alien_sweep_heldout.json",
+  "script": "examples/quantum_audit.py",
+  "run_at_utc": "2026-10-27T18:20:36.630026+00:00",
+  "quantum_source": {
+    "fixture_file": "fixtures/qrng_fixture.json",
+    "backend": "ibm_fez",
+    "job_id": "dbfouq7pc3tc739nvkt0",
+    "qubits": 32,
+    "shots": 2048,
+    "qpu_seconds": 3,
+    "fixture_generated_at": "2026-10-27T09:44:58-04:00",
+    "purpose": "audit subset selection for the v0.4 benchmark verification pass",
+    "n_random_bytes": 8192,
+    "note": "frozen fixture from one IBM Quantum job run earlier; no new job was submitted for this audit"
+  },
+  "selection": {
+    "method": "walk the fixture bytes in order; candidate index = byte % 24 (24 held-out items); accept if not already selected, skip duplicates; stop at 8 distinct indices",
+    "subset_size": 8,
+    "total_items": 24,
+    "bytes_consumed": 10,
+    "selected_indices": [
+      1,
+      10,
+      20,
+      8,
+      21,
+      12,
+      5,
+      22
+    ],
+    "selected_items": [
+      {
+        "index": 1,
+        "item_id": "heldout-01",
+        "bucket": "knowledge",
+        "position_in_bucket": 1,
+        "prompt": "The chemical formula for water is"
+      },
+      {
+        "index": 10,
+        "item_id": "heldout-10",
+        "bucket": "instruction",
+        "position_in_bucket": 2,
+        "prompt": "Reverse the order of the letters in 'abc'."
+      },
+      {
+        "index": 20,
+        "item_id": "heldout-20",
+        "bucket": "math",
+        "position_in_bucket": 4,
+        "prompt": "What is 7 squared?"
+      },
+      {
+        "index": 8,
+        "item_id": "heldout-08",
+        "bucket": "instruction",
+        "position_in_bucket": 0,
+        "prompt": "Repeat the word 'blue' exactly two times separated by a space."
+      },
+      {
+        "index": 21,
+        "item_id": "heldout-21",
+        "bucket": "math",
+        "position_in_bucket": 5,
+        "prompt": "What is 15 + 23 - 10?"
+      },
+      {
+        "index": 12,
+        "item_id": "heldout-12",
+        "bucket": "instruction",
+        "position_in_bucket": 4,
+        "prompt": "Spell out the number 5 as a lowercase English word."
+      },
+      {
+        "index": 5,
+        "item_id": "heldout-05",
+        "bucket": "knowledge",
+        "position_in_bucket": 5,
+        "prompt": "The element with chemical symbol O is"
+      },
+      {
+        "index": 22,
+        "item_id": "heldout-22",
+        "bucket": "math",
+        "position_in_bucket": 6,
+        "prompt": "What is 8 * 7 + 6?"
+      }
+    ]
+  },
+  "per_config": {
+    "uniform_rank32": {
+      "selected_items": [
+        {
+          "index": 1,
+          "item_id": "heldout-01",
+          "bucket": "knowledge",
+          "position_in_bucket": 1,
+          "logprob": -6.0896188013150265,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.25373411672145946,
+          "prompt": "The chemical formula for water is"
+        },
+        {
+          "index": 10,
+          "item_id": "heldout-10",
+          "bucket": "instruction",
+          "position_in_bucket": 2,
+          "logprob": -11.326082756254166,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.4719201148439236,
+          "prompt": "Reverse the order of the letters in 'abc'."
+        },
+        {
+          "index": 20,
+          "item_id": "heldout-20",
+          "bucket": "math",
+          "position_in_bucket": 4,
+          "logprob": -7.556504310356592,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.31485434626485803,
+          "prompt": "What is 7 squared?"
+        },
+        {
+          "index": 8,
+          "item_id": "heldout-08",
+          "bucket": "instruction",
+          "position_in_bucket": 0,
+          "logprob": -9.532485010686338,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3971868754452641,
+          "prompt": "Repeat the word 'blue' exactly two times separated by a space."
+        },
+        {
+          "index": 21,
+          "item_id": "heldout-21",
+          "bucket": "math",
+          "position_in_bucket": 5,
+          "logprob": -6.033214856384206,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.2513839523493419,
+          "prompt": "What is 15 + 23 - 10?"
+        },
+        {
+          "index": 12,
+          "item_id": "heldout-12",
+          "bucket": "instruction",
+          "position_in_bucket": 4,
+          "logprob": -11.143121419135793,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.4642967257973247,
+          "prompt": "Spell out the number 5 as a lowercase English word."
+        },
+        {
+          "index": 5,
+          "item_id": "heldout-05",
+          "bucket": "knowledge",
+          "position_in_bucket": 5,
+          "logprob": -7.865520628128349,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3277300261720146,
+          "prompt": "The element with chemical symbol O is"
+        },
+        {
+          "index": 22,
+          "item_id": "heldout-22",
+          "bucket": "math",
+          "position_in_bucket": 6,
+          "logprob": -8.703859851819542,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3626608271591476,
+          "prompt": "What is 8 * 7 + 6?"
+        }
+      ],
+      "subset_overall_mean_target_logprob": -8.531300954260002,
+      "subset_bucket_mean_target_logprob": {
+        "knowledge": -6.977569714721688,
+        "instruction": -10.6672297286921,
+        "math": -7.43119300618678
+      },
+      "subset_first_token_accuracy": 0.0,
+      "subset_gap_closed": null,
+      "subset_gap_closed_note": "not applicable: the held-out file records per-item logprobs only for the factored configs, so there is no per-item base or full_delta counterpart to form a subset gap from"
+    },
+    "mlp_behemoth": {
+      "selected_items": [
+        {
+          "index": 1,
+          "item_id": "heldout-01",
+          "bucket": "knowledge",
+          "position_in_bucket": 1,
+          "logprob": -5.260216545256683,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.21917568938569512,
+          "prompt": "The chemical formula for water is"
+        },
+        {
+          "index": 10,
+          "item_id": "heldout-10",
+          "bucket": "instruction",
+          "position_in_bucket": 2,
+          "logprob": -10.958713049643398,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.4566130437351416,
+          "prompt": "Reverse the order of the letters in 'abc'."
+        },
+        {
+          "index": 20,
+          "item_id": "heldout-20",
+          "bucket": "math",
+          "position_in_bucket": 4,
+          "logprob": -6.491931536667145,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.270497147361131,
+          "prompt": "What is 7 squared?"
+        },
+        {
+          "index": 8,
+          "item_id": "heldout-08",
+          "bucket": "instruction",
+          "position_in_bucket": 0,
+          "logprob": -8.970952865296688,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.37378970272069534,
+          "prompt": "Repeat the word 'blue' exactly two times separated by a space."
+        },
+        {
+          "index": 21,
+          "item_id": "heldout-21",
+          "bucket": "math",
+          "position_in_bucket": 5,
+          "logprob": -5.290744218233586,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.22044767575973276,
+          "prompt": "What is 15 + 23 - 10?"
+        },
+        {
+          "index": 12,
+          "item_id": "heldout-12",
+          "bucket": "instruction",
+          "position_in_bucket": 4,
+          "logprob": -10.772833095493974,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.44886804564558225,
+          "prompt": "Spell out the number 5 as a lowercase English word."
+        },
+        {
+          "index": 5,
+          "item_id": "heldout-05",
+          "bucket": "knowledge",
+          "position_in_bucket": 5,
+          "logprob": -7.917084875768683,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3298785364903618,
+          "prompt": "The element with chemical symbol O is"
+        },
+        {
+          "index": 22,
+          "item_id": "heldout-22",
+          "bucket": "math",
+          "position_in_bucket": 6,
+          "logprob": -7.6108500315188605,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3171187513132859,
+          "prompt": "What is 8 * 7 + 6?"
+        }
+      ],
+      "subset_overall_mean_target_logprob": -7.909165777234877,
+      "subset_bucket_mean_target_logprob": {
+        "knowledge": -6.588650710512683,
+        "instruction": -10.234166336811354,
+        "math": -6.464508595473197
+      },
+      "subset_first_token_accuracy": 0.0,
+      "subset_gap_closed": null,
+      "subset_gap_closed_note": "not applicable: the held-out file records per-item logprobs only for the factored configs, so there is no per-item base or full_delta counterpart to form a subset gap from"
+    },
+    "mlp_behemoth_lite": {
+      "selected_items": [
+        {
+          "index": 1,
+          "item_id": "heldout-01",
+          "bucket": "knowledge",
+          "position_in_bucket": 1,
+          "logprob": -5.280669316607669,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.22002788819198618,
+          "prompt": "The chemical formula for water is"
+        },
+        {
+          "index": 10,
+          "item_id": "heldout-10",
+          "bucket": "instruction",
+          "position_in_bucket": 2,
+          "logprob": -11.17743356979011,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.4657263987412546,
+          "prompt": "Reverse the order of the letters in 'abc'."
+        },
+        {
+          "index": 20,
+          "item_id": "heldout-20",
+          "bucket": "math",
+          "position_in_bucket": 4,
+          "logprob": -6.5479330517599035,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.27283054382332933,
+          "prompt": "What is 7 squared?"
+        },
+        {
+          "index": 8,
+          "item_id": "heldout-08",
+          "bucket": "instruction",
+          "position_in_bucket": 0,
+          "logprob": -8.972475575488088,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.37385314897867034,
+          "prompt": "Repeat the word 'blue' exactly two times separated by a space."
+        },
+        {
+          "index": 21,
+          "item_id": "heldout-21",
+          "bucket": "math",
+          "position_in_bucket": 5,
+          "logprob": -5.36342300710496,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.22347595862937333,
+          "prompt": "What is 15 + 23 - 10?"
+        },
+        {
+          "index": 12,
+          "item_id": "heldout-12",
+          "bucket": "instruction",
+          "position_in_bucket": 4,
+          "logprob": -10.826124234316346,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.4510885097631811,
+          "prompt": "Spell out the number 5 as a lowercase English word."
+        },
+        {
+          "index": 5,
+          "item_id": "heldout-05",
+          "bucket": "knowledge",
+          "position_in_bucket": 5,
+          "logprob": -7.766476758891143,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.32360319828713097,
+          "prompt": "The element with chemical symbol O is"
+        },
+        {
+          "index": 22,
+          "item_id": "heldout-22",
+          "bucket": "math",
+          "position_in_bucket": 6,
+          "logprob": -7.702198299778283,
+          "first_token_correct": 0,
+          "contribution_to_full_mean": -0.3209249291574285,
+          "prompt": "What is 8 * 7 + 6?"
+        }
+      ],
+      "subset_overall_mean_target_logprob": -7.954591726717063,
+      "subset_bucket_mean_target_logprob": {
+        "knowledge": -6.523573037749406,
+        "instruction": -10.32534445986485,
+        "math": -6.537851452881049
+      },
+      "subset_first_token_accuracy": 0.0,
+      "subset_gap_closed": null,
+      "subset_gap_closed_note": "not applicable: the held-out file records per-item logprobs only for the factored configs, so there is no per-item base or full_delta counterpart to form a subset gap from"
+    }
+  },
+  "checks": [
+    {
+      "name": "fixture_byte_count == shots * qubits / 8",
+      "recomputed": 8192.0,
+      "reported": 8192.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set overall factored mean_target_logprob",
+      "recomputed": -8.851554203835738,
+      "reported": -8.851554203835738,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set overall factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set knowledge factored mean_target_logprob",
+      "recomputed": -10.297644800209842,
+      "reported": -10.297644800209842,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set knowledge factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set instruction factored mean_target_logprob",
+      "recomputed": -9.299502159565801,
+      "reported": -9.299502159565801,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set instruction factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set math factored mean_target_logprob",
+      "recomputed": -6.957515651731569,
+      "reported": -6.957515651731569,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: full-set math factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: gap_closed overall",
+      "recomputed": 0.01564243038524459,
+      "reported": 0.01564243038524459,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: gap_closed knowledge",
+      "recomputed": 0.27185025003406543,
+      "reported": 0.27185025003406543,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: gap_closed instruction",
+      "recomputed": -0.20005299525050946,
+      "reported": -0.20005299525050946,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: gap_closed math",
+      "recomputed": 1.2355731670467298,
+      "reported": 1.2355731670467298,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "uniform_rank32: subset+complement mean reproduces reported overall factored mean",
+      "recomputed": -8.851554203835738,
+      "reported": -8.851554203835738,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set overall factored mean_target_logprob",
+      "recomputed": -8.519294854322665,
+      "reported": -8.519294854322665,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set overall factored accuracy",
+      "recomputed": 0.041666666666666664,
+      "reported": 0.041666666666666664,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set knowledge factored mean_target_logprob",
+      "recomputed": -10.322385879852932,
+      "reported": -10.322385879852932,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set knowledge factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set instruction factored mean_target_logprob",
+      "recomputed": -9.11764732690944,
+      "reported": -9.11764732690944,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set instruction factored accuracy",
+      "recomputed": 0.125,
+      "reported": 0.125,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set math factored mean_target_logprob",
+      "recomputed": -6.117851356205622,
+      "reported": -6.117851356205622,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: full-set math factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: gap_closed overall",
+      "recomputed": 0.10831130486402876,
+      "reported": 0.10831130486402876,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: gap_closed knowledge",
+      "recomputed": 0.2665569093656965,
+      "reported": 0.2665569093656965,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: gap_closed instruction",
+      "recomputed": -0.1697571955534997,
+      "reported": -0.1697571955534997,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: gap_closed math",
+      "recomputed": 11.771070334588293,
+      "reported": 11.771070334588293,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth: subset+complement mean reproduces reported overall factored mean",
+      "recomputed": -8.519294854322666,
+      "reported": -8.519294854322665,
+      "abs_diff": 1.7763568394002505e-15,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set overall factored mean_target_logprob",
+      "recomputed": -8.568015315179313,
+      "reported": -8.568015315179313,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set overall factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set knowledge factored mean_target_logprob",
+      "recomputed": -10.377620816634725,
+      "reported": -10.377620816634725,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set knowledge factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set instruction factored mean_target_logprob",
+      "recomputed": -9.159293203598963,
+      "reported": -9.159293203598963,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set instruction factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set math factored mean_target_logprob",
+      "recomputed": -6.167131925304251,
+      "reported": -6.167131925304251,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: full-set math factored accuracy",
+      "recomputed": 0.0,
+      "reported": 0.0,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: gap_closed overall",
+      "recomputed": 0.0947229129097021,
+      "reported": 0.0947229129097021,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: gap_closed knowledge",
+      "recomputed": 0.25473942438122454,
+      "reported": 0.25473942438122454,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: gap_closed instruction",
+      "recomputed": -0.17669512027049808,
+      "reported": -0.17669512027049808,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: gap_closed math",
+      "recomputed": 11.152733579149347,
+      "reported": 11.152733579149347,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "mlp_behemoth_lite: subset+complement mean reproduces reported overall factored mean",
+      "recomputed": -8.568015315179313,
+      "reported": -8.568015315179313,
+      "abs_diff": 0.0,
+      "pass": true
+    },
+    {
+      "name": "ranking_by_heldout_task_score order matches recomputed factored means",
+      "recomputed": [
+        "mlp_behemoth",
+        "mlp_behemoth_lite",
+        "uniform_rank32"
+      ],
+      "reported": [
+        "mlp_behemoth",
+        "mlp_behemoth_lite",
+        "uniform_rank32"
+      ],
+      "abs_diff": null,
+      "pass": true
+    }
+  ],
+  "summary": {
+    "n_checks": 41,
+    "n_passed": 41,
+    "all_pass": true,
+    "tolerance": "abs diff <= 1e-6 * max(1, |reported|)"
+  }
+}
