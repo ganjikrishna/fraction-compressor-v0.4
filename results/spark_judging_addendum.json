@@ -1,0 +1,63 @@
+{
+ "judging_pass": "spark_judging_addendum",
+ "date": "2026-10-27",
+ "judge": {
+  "provider": "meta-model-api",
+  "model": "muse-spark-1.3",
+  "time": "2026-10-27T20:18:41Z",
+  "prompt_tokens": 1507,
+  "completion_tokens": 4283,
+  "reasoning_tokens": 3389,
+  "total_tokens": 5790,
+  "role": "independent judge over the strengthening results; Spark saw only the numbers copied from the cited files, not the files themselves"
+ },
+ "sources_judged": [
+  "results/alien_sweep_heldout96.json",
+  "results/second_pair_stage2.json",
+  "results/second_pair_heldout96.json"
+ ],
+ "metric": "gap_closed = (factored - base) / (full - base) on mean target logprob of the answer tokens; first-token accuracy reported alongside",
+ "verdicts": [
+  {
+   "claim_id": "A",
+   "claim": "On the combined 96 fresh items (pair 1, Qwen2.5-0.5B), mlp_behemoth_lite closes 23.2% of the gap vs uniform_rank32 2.1%, at fewer bytes (19,358,176 vs 19,434,496).",
+   "verdict": "SUPPORTED",
+   "cited_file": "results/alien_sweep_heldout96.json",
+   "values_relied_on": "combined-96 gap_closed 0.231923 (23.2%) for mlp_behemoth_lite at 19,358,176 B vs 0.020764 (2.1%) for uniform_rank32 at 19,434,496 B; factored means -10.545083 vs -11.095641 with base -11.149778",
+   "note": "Lite uses fewer bytes and closes ~11x the gap of uniform on the same 96 items."
+  },
+  {
+   "claim_id": "B",
+   "claim": "Lite beats uniform on both subsets independently (heldout24: 9.5% vs 1.6%; heldout72_new: 30.4% vs 2.3%), so the earlier shrinkage pattern reversed on fresh items.",
+   "verdict": "SUPPORTED",
+   "cited_file": "results/alien_sweep_heldout96.json",
+   "values_relied_on": "heldout24: lite 0.094723 (9.5%) vs uniform 0.015642 (1.6%); heldout72_new: lite 0.303801 (30.4%) vs uniform 0.023447 (2.3%); combined-96 lite 0.231923 (23.2%) > first-24 lite 0.094723 (9.5%)",
+   "note": "Lite beats uniform on both subsets independently, and combined exceeds the first-24 figure, contrary to further shrinkage."
+  },
+  {
+   "claim_id": "C",
+   "claim": "On the second pair (SmolLM2-360M), the byte-fair variant o-down-rebalanced (19,683,328 B, inside the 19,705,856 B uniform budget) beats uniform on the same 96 items by 0.293 nats raw mean logprob.",
+   "verdict": "SUPPORTED",
+   "cited_file": "results/second_pair_heldout96.json",
+   "values_relied_on": "o-down-rebalanced 19,683,328 B inside 19,705,856 B uniform budget; 96-item factored means -8.072965 vs -8.366280 for uniform, difference 0.293 nats; base -12.878565",
+   "note": "Budget and winner identity from stage2, scores confirm 0.293-nat raw logprob margin for the byte-fair variant."
+  },
+  {
+   "claim_id": "D",
+   "claim": "On pair 2, gap_closed exceeds 1.0 for all factored configs because they outscore the full fp16 delta itself, so gap_closed is not a recovery fraction on that pair.",
+   "verdict": "SUPPORTED",
+   "cited_file": "results/second_pair_heldout96.json",
+   "values_relied_on": "uniform 1.014816, supercharge 1.088209, rebalanced 1.080783 all >1.0 because factored means -8.36628, -8.039946, -8.072965 all > full delta -8.432159; math bucket gap null where full below base",
+   "note": "With factored above full, gap_closed cannot be read as recovery fraction; raw logprob margin is the valid comparison."
+  },
+  {
+   "claim_id": "E",
+   "claim": "The headline ruling still stands: mlp_behemoth_lite is the byte-fair leader on pair 1, and mlp_behemoth is named only as the byte-unfair parent.",
+   "verdict": "NOT SUPPORTED",
+   "cited_file": "results/alien_sweep_heldout96.json",
+   "values_relied_on": "excerpt lists only uniform, lite, and reference mlp_behemoth (21,719,776 B, gap 0.265984); no full byte-fair ranking or quoted prose provided",
+   "note": "Numbers show lite beats uniform and parent is byte-unfair, but leadership among all byte-fair configs and prose naming cannot be verified from numbers alone."
+  }
+ ],
+ "headline_statement": "On Qwen2.5-0.5B the byte-fair mlp_behemoth_lite closes 23.2% of the mean target-logprob gap on 96 fresh items versus 2.1% for uniform rank32 at fewer bytes, winning both subsets (9.5% vs 1.6% on heldout24 and 30.4% vs 2.3% on heldout72_new) so the combined figure exceeds the earlier 9.5% first-24 figure, with byte-unfair parent mlp_behemoth at 26.6% for reference only, while on SmolLM2-360M the byte-fair o-down-rebalanced beats uniform by 0.293 nats raw mean logprob within budget, but all factored configs outscore the full fp16 delta itself so gap_closed exceeds 1.0 and is not a recovery fraction with math-bucket gaps recorded as null where full scored below base, and all results remain mean target logprob of correct tokens not task accuracy."
+}
