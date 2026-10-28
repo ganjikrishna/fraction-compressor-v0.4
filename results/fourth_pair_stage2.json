@@ -1,0 +1,867 @@
+{
+  "stage": "fourth_pair_stage2_real_model_task_benchmark",
+  "date": "2026-10-28",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, qwen-test venv: python 3.14 + numpy 2.5.4 + tokenizers 0.23.3)",
+  "model_pair": {
+    "base": "~/qwen15-test/data/base/model.safetensors (Qwen/Qwen2.5-1.5B, BF16, Apache 2.0)",
+    "instruct": "~/qwen15-test/data/instruct/model.safetensors (Qwen/Qwen2.5-1.5B-Instruct, BF16, Apache 2.0)",
+    "local_note": "downloaded on the Muse VM through the Hugging Face connector (non-gated repos) and copied to Flash; this pair is the scale test requested Oct 28 after the fresh-eyes review asked whether the results survive above 1B parameters",
+    "matrices": "embedding (tied, also the LM head) + 28 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 197 delta matrices"
+  },
+  "probe_set": {
+    "source": "Signet probe items (ITEMS) imported at run time from ~/qwen-test/signet_battery.py on Flash",
+    "label": "pre-existing evaluation data: 24 hand-written probe items from the prior Fraction Compressor work (v0.1-v0.3 / Signet), not created during this event",
+    "n_items": 24,
+    "buckets": {
+      "knowledge": 8,
+      "instruction": 8,
+      "math": 8
+    }
+  },
+  "method": {
+    "configs_per_recipe": "base (no delta), full_delta (Instruct weights == base + full delta on every tensor), factored_delta (base + factored delta per the recipe's rank map)",
+    "factored_application": "rank map applies per layer type across all 28 blocks plus the tied embedding (197 matrices); factors built with factored.quantize_delta's construction via one exact SVD per matrix sliced per rank (validated against quantize_delta itself, see build_validation; the 151936-row embedding's exact SVD is computed through its Gram matrix for memory, see the script header); rank 0 drops the matrix's delta; RMSNorm weights and attention biases stay at base values in factored configs",
+    "scoring": "chat-formatted prompt (ChatML format, system line 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.'); target logprob = summed log-probability of the answer tokens (Signet convention); accuracy = first-token accuracy; gap_closed = (factored - base) / (full - base) on mean target logprob",
+    "forward_pass": "NumPy Qwen2.5 forward written for this pair (plain RoPE theta 1000000, RMSNorm eps 1e-6, GQA 12 Q / 2 KV heads, tied embeddings), mirroring the Phase 1 Qwen forward; no external Signet battery exists for this pair, so it is validated by internal consistency (see forward_validation)",
+    "stage1_role": "filter only: no winner is declared from Stage 1 matrix error; the ranking below is by Stage 2 task score",
+    "repricing": "every recipe re-priced on real shapes with factored.storage_bytes before comparison; recipes were generated against the real-shape budget directly (see results/fourth_pair_check1.json), so generation totals and Stage 2 totals use the same basis",
+    "recipe_generation": {
+      "provider": "baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "budget_bytes_real": 39046144,
+      "recipes_file": "results/fourth_pair_check1.json",
+      "stage1_file": "~/fc-v04-sweep4/stage1.json (Flash workdir)",
+      "stage1_ranking": [
+        {
+          "name": "Tied Head Guardian",
+          "relative_frobenius_error": 0.749209
+        },
+        {
+          "name": "K-V Zero Reallocator",
+          "relative_frobenius_error": 0.750212
+        },
+        {
+          "name": "Attention Citadel",
+          "relative_frobenius_error": 0.778044
+        },
+        {
+          "name": "Down Dominator",
+          "relative_frobenius_error": 0.78799
+        },
+        {
+          "name": "MLP Expansion Surge",
+          "relative_frobenius_error": 0.933914
+        }
+      ],
+      "stage1_human_uniform_rank32": 0.759487
+    }
+  },
+  "build_validation": {
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 1.1641532182693481e-10,
+      "model.layers.8.mlp.gate_proj.weight": 2.9103830456733704e-11,
+      "model.layers.27.self_attn.o_proj.weight": 0.0
+    },
+    "quantize_from_svd_vs_quantize_delta": [
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 12,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 24,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 32,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 80,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 96,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.k_proj.weight",
+        "rank": 16,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      }
+    ],
+    "build_wall_s": 579.83,
+    "build_peak_rss_mb": 7042.6
+  },
+  "forward_validation": {
+    "knowledge": {
+      "base_mean_target_logprob": -15.44356562509246,
+      "full_mean_target_logprob": -10.343343875248754,
+      "gap_full_minus_base": 5.100221749843705
+    },
+    "instruction": {
+      "base_mean_target_logprob": -17.86633085634726,
+      "full_mean_target_logprob": -13.888927289302478,
+      "gap_full_minus_base": 3.9774035670447834
+    },
+    "math": {
+      "base_mean_target_logprob": -7.957479303721292,
+      "full_mean_target_logprob": -0.8013596434352158,
+      "gap_full_minus_base": 7.156119660286076
+    }
+  },
+  "forward_validation_verdict": {
+    "method": "internal consistency (no external Signet battery exists for this pair): graft check base + (instruct - base) == instruct on 3 sampled tensors; quantize_from_svd cross-checked against factored.quantize_delta on block matrices; the full-delta config must beat base overall on identical prompts",
+    "overall_gap_full_minus_base": 5.411248325724856,
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 1.1641532182693481e-10,
+      "model.layers.8.mlp.gate_proj.weight": 2.9103830456733704e-11,
+      "model.layers.27.self_attn.o_proj.weight": 0.0
+    },
+    "quantize_from_svd_max_abs_diff": 0.0,
+    "verdict": "PASS"
+  },
+  "gap_closed_note": "one or more factored configs outscore the full fp16 delta itself on this probe set, so gap_closed passes 1.0 and is NOT a recovery fraction for this pair (Glimmer wording limit, Oct 27); the raw mean target logprob margin is the honest measure",
+  "full_delta_fp16_bytes_real_shapes": 3087138816,
+  "shared_configs": {
+    "base": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.0,
+        "mean_target_logprob": -13.755791928387005
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -15.44356562509246
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -17.86633085634726
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -7.957479303721292
+        }
+      }
+    },
+    "full_delta": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.2916666666666667,
+        "mean_target_logprob": -8.34454360266215
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -10.343343875248754
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -13.888927289302478
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.875,
+          "mean_target_logprob": -0.8013596434352158
+        }
+      }
+    },
+    "base_wall_s": 307.28,
+    "full_delta_wall_s": 295.55
+  },
+  "recipes": [
+    {
+      "name": "Tied Head Guardian",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 512,
+        "attn.q_proj": 12,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 20,
+        "mlp.gate": 24,
+        "mlp.up": 24,
+        "mlp.down": 31
+      },
+      "rank0_layer_names": [
+        "attn.k_proj",
+        "attn.v_proj"
+      ],
+      "real_shape_bytes": 38764800,
+      "generic_shape_bytes": 38764800,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.755791928387005
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -15.44356562509246
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.86633085634726
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.957479303721292
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -8.34454360266215
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.343343875248754
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.888927289302478
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8013596434352158
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.20833333333333334,
+            "mean_target_logprob": -7.7636348573291984
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -9.18146835703093
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.739063381326854
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.625,
+              "mean_target_logprob": -1.3703728336298104
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 1.2278088238523022,
+        "instruction": 1.2890991292668785,
+        "math": 0.9204857915732718,
+        "overall": 1.1073520767049876
+      },
+      "wall_s": 302.62,
+      "eval_wall_s": 287.21,
+      "peak_rss_mb": 7902.8
+    },
+    {
+      "name": "Attention Citadel",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 16,
+        "attn.q_proj": 80,
+        "attn.k_proj": 64,
+        "attn.v_proj": 64,
+        "attn.o_proj": 96,
+        "mlp.gate": 16,
+        "mlp.up": 16,
+        "mlp.down": 8
+      },
+      "rank0_layer_names": [],
+      "real_shape_bytes": 38564096,
+      "generic_shape_bytes": 38564096,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.755791928387005
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -15.44356562509246
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.86633085634726
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.957479303721292
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -8.34454360266215
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.343343875248754
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.888927289302478
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8013596434352158
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.25,
+            "mean_target_logprob": -7.8781829602926905
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -8.372346894523734
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.45879564361701
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.75,
+              "mean_target_logprob": -1.8034063427373273
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 1.3864531930960495,
+        "instruction": 1.108143827608888,
+        "math": 0.8599734567236047,
+        "overall": 1.08618355955915
+      },
+      "wall_s": 298.4,
+      "eval_wall_s": 283.86,
+      "peak_rss_mb": 7893.3
+    },
+    {
+      "name": "MLP Expansion Surge",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 0,
+        "attn.q_proj": 24,
+        "attn.k_proj": 24,
+        "attn.v_proj": 24,
+        "attn.o_proj": 24,
+        "mlp.gate": 90,
+        "mlp.up": 90,
+        "mlp.down": 12
+      },
+      "rank0_layer_names": [
+        "embed"
+      ],
+      "real_shape_bytes": 38960128,
+      "generic_shape_bytes": 38960128,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.755791928387005
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -15.44356562509246
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.86633085634726
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.957479303721292
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -8.34454360266215
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.343343875248754
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.888927289302478
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8013596434352158
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.20833333333333334,
+            "mean_target_logprob": -8.006503283710133
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -9.808933612993822
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.729786558766124
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.625,
+              "mean_target_logprob": -1.480789679370456
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 1.104781769983101,
+        "instruction": 1.2914315107826981,
+        "math": 0.905056082319887,
+        "overall": 1.0624699327408402
+      },
+      "wall_s": 297.63,
+      "eval_wall_s": 284.63,
+      "peak_rss_mb": 7890.0
+    },
+    {
+      "name": "K-V Zero Reallocator",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 64,
+        "attn.q_proj": 96,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 96,
+        "mlp.gate": 32,
+        "mlp.up": 32,
+        "mlp.down": 18
+      },
+      "rank0_layer_names": [
+        "attn.k_proj",
+        "attn.v_proj"
+      ],
+      "real_shape_bytes": 38788096,
+      "generic_shape_bytes": 38788096,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.755791928387005
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -15.44356562509246
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.86633085634726
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.957479303721292
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -8.34454360266215
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.343343875248754
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.888927289302478
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8013596434352158
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.25,
+            "mean_target_logprob": -7.554154307813417
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -9.139294557592168
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.217730904139795
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.75,
+              "mean_target_logprob": -1.3054374617082898
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 1.236077836751605,
+        "instruction": 1.420172697336917,
+        "math": 0.9295598952780895,
+        "overall": 1.1460641329453045
+      },
+      "wall_s": 297.8,
+      "eval_wall_s": 284.14,
+      "peak_rss_mb": 7889.0
+    },
+    {
+      "name": "Down Dominator",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 48,
+        "attn.q_proj": 32,
+        "attn.k_proj": 16,
+        "attn.v_proj": 16,
+        "attn.o_proj": 64,
+        "mlp.gate": 0,
+        "mlp.up": 0,
+        "mlp.down": 45
+      },
+      "rank0_layer_names": [
+        "mlp.gate",
+        "mlp.up"
+      ],
+      "real_shape_bytes": 38623232,
+      "generic_shape_bytes": 38623232,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.755791928387005
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -15.44356562509246
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.86633085634726
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.957479303721292
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -8.34454360266215
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.343343875248754
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.888927289302478
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8013596434352158
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.25,
+            "mean_target_logprob": -6.770329668759838
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.249912532878392
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -11.23470827914439
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.75,
+              "mean_target_logprob": -1.8263681942567307
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 1.6065287930794694,
+        "instruction": 1.6673245411026207,
+        "math": 0.8567647552751321,
+        "overall": 1.290915115911159
+      },
+      "wall_s": 296.71,
+      "eval_wall_s": 284.82,
+      "peak_rss_mb": 7894.6
+    }
+  ],
+  "human_baseline": {
+    "name": "uniform_rank32",
+    "kind": "human_baseline",
+    "ranks": {
+      "embed": 32,
+      "attn.q_proj": 32,
+      "attn.k_proj": 32,
+      "attn.v_proj": 32,
+      "attn.o_proj": 32,
+      "mlp.gate": 32,
+      "mlp.up": 32,
+      "mlp.down": 32
+    },
+    "rank0_layer_names": [],
+    "real_shape_bytes": 39046144,
+    "generic_shape_bytes": 39046144,
+    "configs": {
+      "base": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.0,
+          "mean_target_logprob": -13.755791928387005
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -15.44356562509246
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -17.86633085634726
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.957479303721292
+          }
+        }
+      },
+      "full_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.2916666666666667,
+          "mean_target_logprob": -8.34454360266215
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -10.343343875248754
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.888927289302478
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.875,
+            "mean_target_logprob": -0.8013596434352158
+          }
+        }
+      },
+      "factored_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.25,
+          "mean_target_logprob": -7.612950983984054
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -8.941028216573512
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.550132769023204
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.75,
+            "mean_target_logprob": -1.3476919663554452
+          }
+        }
+      }
+    },
+    "gap_closed": {
+      "knowledge": 1.2749518996342102,
+      "instruction": 1.336600120584193,
+      "math": 0.9236552281326177,
+      "overall": 1.1351984929614363
+    },
+    "wall_s": 293.16,
+    "eval_wall_s": 279.92,
+    "peak_rss_mb": 7898.2
+  },
+  "ranking_by_task_score": [
+    {
+      "position": 1,
+      "name": "Down Dominator",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -6.770329668759838,
+      "factored_accuracy": 0.25,
+      "overall_gap_closed": 1.290915115911159,
+      "real_shape_bytes": 38623232
+    },
+    {
+      "position": 2,
+      "name": "K-V Zero Reallocator",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -7.554154307813417,
+      "factored_accuracy": 0.25,
+      "overall_gap_closed": 1.1460641329453045,
+      "real_shape_bytes": 38788096
+    },
+    {
+      "position": 3,
+      "name": "uniform_rank32",
+      "kind": "human_baseline",
+      "factored_mean_target_logprob": -7.612950983984054,
+      "factored_accuracy": 0.25,
+      "overall_gap_closed": 1.1351984929614363,
+      "real_shape_bytes": 39046144
+    },
+    {
+      "position": 4,
+      "name": "Tied Head Guardian",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -7.7636348573291984,
+      "factored_accuracy": 0.20833333333333334,
+      "overall_gap_closed": 1.1073520767049876,
+      "real_shape_bytes": 38764800
+    },
+    {
+      "position": 5,
+      "name": "Attention Citadel",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -7.8781829602926905,
+      "factored_accuracy": 0.25,
+      "overall_gap_closed": 1.08618355955915,
+      "real_shape_bytes": 38564096
+    },
+    {
+      "position": 6,
+      "name": "MLP Expansion Surge",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -8.006503283710133,
+      "factored_accuracy": 0.20833333333333334,
+      "overall_gap_closed": 1.0624699327408402,
+      "real_shape_bytes": 38960128
+    }
+  ],
+  "winner": {
+    "name": "Down Dominator",
+    "kind": "spark_recipe",
+    "note": "top recipe by Stage 2 task score; byte-fairness is judged on real_shape_bytes vs the uniform recipe and the byte-matched confirmation runs in fourth_pair_heldout96"
+  },
+  "api_calls": "recipe generation only (Baseten, logged in results/api_usage_log.jsonl); the rest is compute",
+  "scripts": [
+    "examples/fourth_pair_precompute.py",
+    "examples/fourth_pair_stage2.py"
+  ]
+}

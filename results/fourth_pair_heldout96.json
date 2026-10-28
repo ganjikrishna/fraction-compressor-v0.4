@@ -1,0 +1,1959 @@
+{
+  "stage": "fourth_pair_heldout96_confirmation",
+  "date": "2026-10-28",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, qwen-test venv: python 3.14 + numpy 2.5.4 + tokenizers 0.23.3)",
+  "model_pair": {
+    "base": "~/qwen15-test/data/base/model.safetensors (Qwen/Qwen2.5-1.5B, BF16, Apache 2.0)",
+    "instruct": "~/qwen15-test/data/instruct/model.safetensors (Qwen/Qwen2.5-1.5B-Instruct, BF16, Apache 2.0)",
+    "local_note": "downloaded on the Muse VM through the Hugging Face connector (non-gated repos) and copied to Flash; this pair is the scale test requested Oct 28 after the fresh-eyes review asked whether the results survive above 1B parameters",
+    "matrices": "embedding (tied, also the LM head) + 28 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 197 delta matrices"
+  },
+  "probe_set": {
+    "source": "the combined 96 fresh Spark probe items from Phase 1 (data/heldout_probes_spark.json's original 24 held-out + data/heldout72_probes_spark.json's 72 expansion items, combined by this script with Phase 1's subset tags); no pair's sweep saw them during search, Stage 1, or Stage 2",
+    "files": [
+      "data/heldout_probes_spark.json",
+      "data/heldout72_probes_spark.json"
+    ],
+    "n_items": 96,
+    "buckets": {
+      "knowledge": 32,
+      "instruction": 32,
+      "math": 32
+    },
+    "subsets": {
+      "heldout24": 24,
+      "heldout72_new": 72
+    }
+  },
+  "byte_matched_variant": {
+    "name": "Down Dominator",
+    "reason": null,
+    "ranks": {
+      "embed": 48,
+      "attn.q_proj": 32,
+      "attn.k_proj": 16,
+      "attn.v_proj": 16,
+      "attn.o_proj": 64,
+      "mlp.gate": 0,
+      "mlp.up": 0,
+      "mlp.down": 45
+    },
+    "generation": {
+      "provider": "baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "winner": "Down Dominator",
+      "attempts": [],
+      "note": "winner already fits the uniform budget; no byte-matched variant needed"
+    },
+    "price_validation": {
+      "method": "factored.storage_bytes summed over the 197 real matrices read from the model files, computed in the Flash build pass (same code path as Stage 2 pricing)",
+      "real_shape_bytes_computed_on_flash": 38623232,
+      "matches_generation_claim": true,
+      "budget_bytes_uniform_rank32_real": 39046144,
+      "within_budget": true,
+      "build_wall_s": 282.22,
+      "build_peak_rss_mb": 5720.4
+    }
+  },
+  "method": {
+    "configs": "base (no delta), full_delta (Instruct weights), and factored_delta per recipe: uniform_rank32, the Stage 2 winner, and the byte-matched variant",
+    "scoring": "identical to fourth_pair Stage 2: ChatML chat prompt (system line 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.'); target logprob = summed log-probability of the answer tokens; accuracy = first-token accuracy; gap_closed = (factored - base) / (full - base) on mean target logprob, per subset with that subset's own base/full references",
+    "forward_pass": "the fourth_pair_stage2 NumPy Qwen2.5 forward, validated in Stage 2 by internal consistency (graft check, quantize_delta cross-check, full-delta-beats-base gap)",
+    "full_delta_fp16_bytes": 3087138816
+  },
+  "gap_closed_note": "one or more factored configs outscore the full fp16 delta itself on the combined 96, so gap_closed passes 1.0 and is NOT a recovery fraction for this pair (Glimmer wording limit, Oct 27); the raw mean target logprob margin is the honest measure",
+  "shared_configs": {
+    "base": {
+      "overall": {
+        "n": 96,
+        "accuracy": 0.010416666666666666,
+        "mean_target_logprob": -12.584130268980408
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "accuracy": 0.03125,
+          "mean_target_logprob": -11.666595929460598
+        },
+        "instruction": {
+          "n": 32,
+          "accuracy": 0.0,
+          "mean_target_logprob": -18.647259972871762
+        },
+        "math": {
+          "n": 32,
+          "accuracy": 0.0,
+          "mean_target_logprob": -7.438534904608863
+        }
+      }
+    },
+    "full_delta": {
+      "overall": {
+        "n": 96,
+        "accuracy": 0.3333333333333333,
+        "mean_target_logprob": -7.809744927574116
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "accuracy": 0.0625,
+          "mean_target_logprob": -5.809932219157618
+        },
+        "instruction": {
+          "n": 32,
+          "accuracy": 0.1875,
+          "mean_target_logprob": -15.091479173049272
+        },
+        "math": {
+          "n": 32,
+          "accuracy": 0.75,
+          "mean_target_logprob": -2.5278233905154583
+        }
+      }
+    },
+    "base_by_subset": {
+      "heldout24": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.0,
+          "mean_target_logprob": -10.06832344342999
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.682517155872846
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -10.547096341273903
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -6.975356833143226
+          }
+        }
+      },
+      "heldout72_new": {
+        "overall": {
+          "n": 72,
+          "accuracy": 0.013888888888888888,
+          "mean_target_logprob": -13.422732544163878
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 24,
+            "accuracy": 0.041666666666666664,
+            "mean_target_logprob": -11.327955520656516
+          },
+          "instruction": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -21.34731451673771
+          },
+          "math": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.592927595097408
+          }
+        }
+      }
+    },
+    "full_delta_by_subset": {
+      "heldout24": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.2916666666666667,
+          "mean_target_logprob": -4.667459689568725
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.125,
+            "mean_target_logprob": -4.363212855936412
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.75,
+            "mean_target_logprob": -1.3023791709626846
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -8.336787041807076
+          }
+        }
+      },
+      "heldout72_new": {
+        "overall": {
+          "n": 72,
+          "accuracy": 0.3472222222222222,
+          "mean_target_logprob": -8.85717334024258
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 24,
+            "accuracy": 0.041666666666666664,
+            "mean_target_logprob": -6.292172006898021
+          },
+          "instruction": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -19.68784584041147
+          },
+          "math": {
+            "n": 24,
+            "accuracy": 1.0,
+            "mean_target_logprob": -0.5915021734182523
+          }
+        }
+      }
+    }
+  },
+  "configs": {
+    "uniform_rank32": {
+      "name": "uniform_rank32",
+      "kind": "human_baseline",
+      "byte_unfair": false,
+      "ranks": {
+        "embed": 32,
+        "attn.q_proj": 32,
+        "attn.k_proj": 32,
+        "attn.v_proj": 32,
+        "attn.o_proj": 32,
+        "mlp.gate": 32,
+        "mlp.up": 32,
+        "mlp.down": 32
+      },
+      "rank0_layer_names": [],
+      "real_shape_bytes": 39046144,
+      "combined96": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.010416666666666666,
+              "mean_target_logprob": -12.584130268980408
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.03125,
+                "mean_target_logprob": -11.666595929460598
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.0,
+                "mean_target_logprob": -18.647259972871762
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.0,
+                "mean_target_logprob": -7.438534904608863
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.3333333333333333,
+              "mean_target_logprob": -7.809744927574116
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.0625,
+                "mean_target_logprob": -5.809932219157618
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.1875,
+                "mean_target_logprob": -15.091479173049272
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.75,
+                "mean_target_logprob": -2.5278233905154583
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.3229166666666667,
+              "mean_target_logprob": -6.478079873557243
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.125,
+                "mean_target_logprob": -4.203325796860046
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.1875,
+                "mean_target_logprob": -12.828795276753775
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.65625,
+                "mean_target_logprob": -2.4021185470579076
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.2743210984559772,
+          "instruction": 1.6363395337554143,
+          "math": 1.0255980916608083,
+          "overall": 1.2789186374354595
+        }
+      },
+      "heldout24_subset": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.06832344342999
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -12.682517155872846
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -10.547096341273903
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -6.975356833143226
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.2916666666666667,
+              "mean_target_logprob": -4.667459689568725
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.125,
+                "mean_target_logprob": -4.363212855936412
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.75,
+                "mean_target_logprob": -1.3023791709626846
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -8.336787041807076
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.25,
+              "mean_target_logprob": -3.8449817008608904
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -3.1770090697428506
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.75,
+                "mean_target_logprob": -0.6877000612632991
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -7.670235971576522
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.1425844930570248,
+          "instruction": 1.066489769062204,
+          "math": null,
+          "overall": 1.152286379770239
+        }
+      },
+      "heldout72_new_subset": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.013888888888888888,
+              "mean_target_logprob": -13.422732544163878
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.041666666666666664,
+                "mean_target_logprob": -11.327955520656516
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -21.34731451673771
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -7.592927595097408
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.3472222222222222,
+              "mean_target_logprob": -8.85717334024258
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.041666666666666664,
+                "mean_target_logprob": -6.292172006898021
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -19.68784584041147
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 1.0,
+                "mean_target_logprob": -0.5915021734182523
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.3472222222222222,
+              "mean_target_logprob": -7.355779264456026
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.16666666666666666,
+                "mean_target_logprob": -4.545431372565777
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -16.8758270152506
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 0.875,
+                "mean_target_logprob": -0.646079405551703
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.3468657120704044,
+          "instruction": 2.6945296197974415,
+          "math": 0.9922048398938225,
+          "overall": 1.3288521753254294
+        }
+      },
+      "per_item": [
+        {
+          "bucket": "knowledge",
+          "logprob": -2.7544330553965657,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.216319986255625,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.0033500346763158,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.9967676498936843,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -9.14145654158918,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.963772781408376,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.9308836853132441,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.409088823409815,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.08780415593476376,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.01470258932809105,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.08895396992267464,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.8375997898754566,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.9242232195783221,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -3.4697550469981517,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.009496959755113414,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.06906475871381929,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.414196817536581,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.890670365050847,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.81558772895851,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -6.8287180029203105,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -10.40663696113454,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.765837319502005,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.302154543057947,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.938086034451437,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.796710308277821,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -6.352263124122088,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.6506045742983358,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.5955096496709,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.0024304914283744,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -8.064055843664994,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.524821593562848,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.392980368483238,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.353119466738841,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -7.384404979954017,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.33885360244884344,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.227353826231569,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.609325260319506,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.07808437358587,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -8.022058235004305,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.9822137743015121,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.46314391912945113,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.1022919321391504,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -11.092890356418359,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.4350936920848225,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.852576632247468,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.5494592014180664,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -6.45977832179117,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -7.760329414257104,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -18.21953039000955,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -19.61884317234045,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -20.71703771445234,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -19.30465714720047,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -25.48490417523234,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.7107240133474,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -19.676814011043867,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -19.2056332175507,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -14.397962484324413,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -22.701016917715805,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -13.489317750903817,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -16.356286684689685,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -13.846509966031274,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -14.037636971063261,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.228658057984822,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -13.136302583828645,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -14.433842201291409,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -13.158981005201623,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -14.709949929397158,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -17.032563509150254,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -21.06615610957777,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -23.34455034586856,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -9.283971887368363,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -16.857998120440406,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.002815220566672165,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.004994675015273677,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.38688806272263176,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.08252040326949293,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -3.259276706944951,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.03151170687669787,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.20716536590748696,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.02202112467449924,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.1261631115004466,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.021698065597679884,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -1.2485600006680377,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.02272949018185076,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.0026543346573838023,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.06410113788777885,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.04005903429846953,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.02837802490023287,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.05515331160273476,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.010181929812910169,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.013769741969237005,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.007974794675572768,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -5.214140565986378,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.0015247972372659838,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.6500751741159,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.0015489521712865068,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        }
+      ],
+      "wall_s": 1174.75,
+      "eval_wall_s": 1160.94,
+      "peak_rss_mb": 7935.8
+    },
+    "Down Dominator": {
+      "name": "Down Dominator",
+      "kind": "spark_bytematched_variant",
+      "byte_unfair": false,
+      "ranks": {
+        "embed": 48,
+        "attn.q_proj": 32,
+        "attn.k_proj": 16,
+        "attn.v_proj": 16,
+        "attn.o_proj": 64,
+        "mlp.gate": 0,
+        "mlp.up": 0,
+        "mlp.down": 45
+      },
+      "rank0_layer_names": [
+        "mlp.gate",
+        "mlp.up"
+      ],
+      "real_shape_bytes": 38623232,
+      "combined96": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.010416666666666666,
+              "mean_target_logprob": -12.584130268980408
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.03125,
+                "mean_target_logprob": -11.666595929460598
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.0,
+                "mean_target_logprob": -18.647259972871762
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.0,
+                "mean_target_logprob": -7.438534904608863
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.3333333333333333,
+              "mean_target_logprob": -7.809744927574116
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.0625,
+                "mean_target_logprob": -5.809932219157618
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.1875,
+                "mean_target_logprob": -15.091479173049272
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.75,
+                "mean_target_logprob": -2.5278233905154583
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 96,
+              "accuracy": 0.2604166666666667,
+              "mean_target_logprob": -6.343687772752477
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 32,
+                "accuracy": 0.0625,
+                "mean_target_logprob": -4.4598139831909
+              },
+              "instruction": {
+                "n": 32,
+                "accuracy": 0.125,
+                "mean_target_logprob": -12.111447110876608
+              },
+              "math": {
+                "n": 32,
+                "accuracy": 0.59375,
+                "mean_target_logprob": -2.4598022241899224
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.230526849884108,
+          "instruction": 1.838080925101298,
+          "math": 1.013851590778713,
+          "overall": 1.3070672034171866
+        }
+      },
+      "heldout24_subset": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.06832344342999
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -12.682517155872846
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -10.547096341273903
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -6.975356833143226
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.2916666666666667,
+              "mean_target_logprob": -4.667459689568725
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.125,
+                "mean_target_logprob": -4.363212855936412
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.75,
+                "mean_target_logprob": -1.3023791709626846
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -8.336787041807076
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 24,
+              "accuracy": 0.20833333333333334,
+              "mean_target_logprob": -3.9963944114903547
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 8,
+                "accuracy": 0.125,
+                "mean_target_logprob": -2.8326555188278677
+              },
+              "instruction": {
+                "n": 8,
+                "accuracy": 0.5,
+                "mean_target_logprob": -2.5472212594535586
+              },
+              "math": {
+                "n": 8,
+                "accuracy": 0.0,
+                "mean_target_logprob": -6.609306456189638
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.1839766021204727,
+          "instruction": 0.8653455735251047,
+          "math": null,
+          "overall": 1.1242514732201125
+        }
+      },
+      "heldout72_new_subset": {
+        "configs": {
+          "base": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.013888888888888888,
+              "mean_target_logprob": -13.422732544163878
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.041666666666666664,
+                "mean_target_logprob": -11.327955520656516
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -21.34731451673771
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -7.592927595097408
+              }
+            }
+          },
+          "full_delta": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.3472222222222222,
+              "mean_target_logprob": -8.85717334024258
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.041666666666666664,
+                "mean_target_logprob": -6.292172006898021
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -19.68784584041147
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 1.0,
+                "mean_target_logprob": -0.5915021734182523
+              }
+            }
+          },
+          "factored_delta": {
+            "overall": {
+              "n": 72,
+              "accuracy": 0.2777777777777778,
+              "mean_target_logprob": -7.126118893173183
+            },
+            "per_bucket": {
+              "knowledge": {
+                "n": 24,
+                "accuracy": 0.041666666666666664,
+                "mean_target_logprob": -5.002200137978577
+              },
+              "instruction": {
+                "n": 24,
+                "accuracy": 0.0,
+                "mean_target_logprob": -15.29952239468429
+              },
+              "math": {
+                "n": 24,
+                "accuracy": 0.7916666666666666,
+                "mean_target_logprob": -1.0766341468566838
+              }
+            }
+          }
+        },
+        "gap_closed": {
+          "knowledge": 1.2561611048995756,
+          "instruction": 3.6444147505345628,
+          "math": 0.9307095420974888,
+          "overall": 1.3791549665115759
+        }
+      },
+      "per_item": [
+        {
+          "bucket": "knowledge",
+          "logprob": -3.075830416934711,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.1661956929647057,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.7988324377990343,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.9914382138852347,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -7.679564673838306,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.5652895370087343,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.4830743273429579,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.901018850849259,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -1.0299593651591104,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.23265961985262,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -3.1934204468540965,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.6946300651773976,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -2.652011731707063,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -7.465306172772627,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -0.3978344955308502,
+          "first_token_correct": 1,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -4.711948178574705,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.202741396911181,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -7.6724146609588,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -6.977229650257594,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -5.836990693199787,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.452115516576827,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.009390540319484,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -8.278962993834266,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "math",
+          "logprob": -7.444606197459164,
+          "first_token_correct": 0,
+          "subset": "heldout24"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.2347410039908557,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -6.566725232674128,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -6.33763684832341,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.8836526668074,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.9245621533659656,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -8.508589852856678,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.7464019846783354,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.80166631637279,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.8763760096116107,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.808552908650826,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.6878961941953374,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.7884837826485223,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.353709265371743,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -3.5940445957278873,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -7.475991380188662,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -4.462120492856323,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -0.49030182978065756,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -1.6072532220338092,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -9.206466183344212,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -8.23616351920266,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -2.8881300598012762,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -5.613634064343451,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -9.118237060220721,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "knowledge",
+          "logprob": -6.841466684438598,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -18.436979692765654,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -18.629511380185917,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -18.604344918882564,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -19.083125333510974,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -22.294984799228846,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.718253638276199,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -20.747685992398278,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -21.051007966698123,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -17.128735260392038,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -20.991243027983284,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.182842101068877,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.931120856956133,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.717512951412937,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.67236511772368,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -8.89316997352758,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -9.596310881351172,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -11.37571554928709,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -11.153511178944523,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.832949334860082,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -11.736110429750557,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -20.055858702124695,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -17.572635509425407,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -11.114461645140766,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "instruction",
+          "logprob": -12.668101230527606,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.12444580715921354,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.2281269508302441,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.8875444586322718,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.5436616736223522,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.243456486793349,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -1.706925107481589,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.7541564160673905,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.40878613607269365,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.7485481071526762,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.7656248466608673,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -1.899435240490284,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.7961706463534993,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.10110716081962604,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.3584818922020342,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.21139771117358935,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.6844709153929603,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.4814418214811168,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -1.0892127039316433,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.12476770407035176,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.7552891640925533,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.349388954123716,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.030751059698339283,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -4.448205021585004,
+          "first_token_correct": 0,
+          "subset": "heldout72_new"
+        },
+        {
+          "bucket": "math",
+          "logprob": -0.09782353867304446,
+          "first_token_correct": 1,
+          "subset": "heldout72_new"
+        }
+      ],
+      "wall_s": 1179.66,
+      "eval_wall_s": 1167.73,
+      "peak_rss_mb": 7933.8
+    }
+  },
+  "ranking_by_combined96_task_score": [
+    {
+      "name": "Down Dominator",
+      "kind": "spark_bytematched_variant",
+      "byte_unfair": false,
+      "factored_mean_target_logprob": -6.343687772752477,
+      "factored_accuracy": 0.2604166666666667,
+      "overall_gap_closed": 1.3070672034171866,
+      "real_shape_bytes": 38623232
+    },
+    {
+      "name": "uniform_rank32",
+      "kind": "human_baseline",
+      "byte_unfair": false,
+      "factored_mean_target_logprob": -6.478079873557243,
+      "factored_accuracy": 0.3229166666666667,
+      "overall_gap_closed": 1.2789186374354595,
+      "real_shape_bytes": 39046144
+    }
+  ],
+  "verdict": {
+    "stage2_winner": "Down Dominator",
+    "byte_fair_contender": "Down Dominator",
+    "byte_fair_headline_question": "does Down Dominator beat uniform_rank32 on the combined 96 fresh items?",
+    "contender_beats_uniform_on_combined96": true,
+    "contender_gap_closed_combined96": 1.3070672034171866,
+    "uniform_gap_closed_combined96": 1.2789186374354595,
+    "contender_within_uniform_budget": true,
+    "winner_byte_status": {
+      "winner_real_shape_bytes": 38623232,
+      "uniform_real_shape_bytes": 39046144,
+      "winner_byte_unfair": false,
+      "winner_combined96_gap_closed": 1.3070672034171866
+    },
+    "subset_consistency": {
+      "heldout24": {
+        "contender_gap_closed": 1.1242514732201125,
+        "uniform_gap_closed": 1.152286379770239,
+        "contender_beats_uniform": false
+      },
+      "heldout72_new": {
+        "contender_gap_closed": 1.3791549665115759,
+        "uniform_gap_closed": 1.3288521753254294,
+        "contender_beats_uniform": true
+      }
+    }
+  },
+  "scripts": [
+    "examples/fourth_pair_stage2.py",
+    "examples/fourth_pair_heldout96.py"
+  ]
+}
