@@ -1,0 +1,283 @@
+FRACTION COMPRESSOR v0.4 - FORCE-START CONTROL TEST
+Skill: structured information extraction (text + JSON template -> filled JSON)
+Base: Qwen2.5-0.5B. Fine-tune: numind/NuExtract-1.5-tiny (MIT).
+Decoding: the fine-tune's own first token is forced, then greedy, max 64 new tokens including the forced one. No API calls.
+
+UNFORCED REFERENCE (results/skill_demo.json):
+  base (no patch): clean 0, partial 0, failed 10
+  base + compressed patch (uniform rank 32): clean 1, partial 0, failed 9
+  base + full delta (fine-tune weights): clean 8, partial 1, failed 1
+
+Fine-tune weights loaded (RSS 2020 MB)
+
+FORCED FIRST TOKENS (fine-tune greedy argmax after each prompt):
+  [person] token 515 '{\n' (prefix of recorded full-delta answer: True)
+  [product] token 515 '{\n' (prefix of recorded full-delta answer: True)
+  [event] token 341 ' {\n' (prefix of recorded full-delta answer: True)
+  [company] token 515 '{\n' (prefix of recorded full-delta answer: True)
+  [book] token 341 ' {\n' (prefix of recorded full-delta answer: True)
+  [sports] token 515 '{\n' (prefix of recorded full-delta answer: True)
+  [recipe] token 341 ' {\n' (prefix of recorded full-delta answer: True)
+  [weather] token 341 ' {\n' (prefix of recorded full-delta answer: True)
+  [job] token 515 '{\n' (prefix of recorded full-delta answer: True)
+  [model] token 515 '{\n' (prefix of recorded full-delta answer: True)
+
+PATCH: uniform rank 32, factored price 19,434,496 B, 169 matrices with rank > 0
+Base model loaded (RSS 2110 MB)
+
+========================================================================
+CONFIG: base, forced start
+========================================================================
+
+[person] FORCED TOKEN: 515 '{\n'
+ANSWER (43 tokens, 5.1s):
+{
+    "Name": "Maria Chen",
+    "Age": "34",
+    "City": "Seattle",
+    "Employer": "Northwind Labs",
+    "Role": "Software Engineer"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[product] FORCED TOKEN: 515 '{\n'
+ANSWER (42 tokens, 5.0s):
+{
+    "Product": "AeroPress Go",
+    "Price": "49.95",
+    "Weight": "323",
+    "Maker": "AeroPress Inc."
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[event] FORCED TOKEN: 341 ' {\n'
+ANSWER (62 tokens, 7.6s):
+ {
+    "Event": "Riverbend Music Festival",
+    "Date": "August 14, 2027",
+    "City": "Austin, Texas",
+    "Performers": ["The Wild Reeds", "June Harbor"],
+    "Ticket price": "$89"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 6/6)
+
+[company] FORCED TOKEN: 515 '{\n'
+ANSWER (61 tokens, 7.6s):
+{
+    "Company": "Helix Robotics",
+    "Amount raised": "12 million",
+    "Round": "Series A",
+    "Lead investor": "Vertex Ventures",
+    "Founded": "March 3, 2026",
+    "Headquarters": "Denver"
+}
+VERDICT: partial (parseable=True, keys_match=True, values 5/6)
+
+[book] FORCED TOKEN: 341 ' {\n'
+ANSWER (51 tokens, 8.8s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] FORCED TOKEN: 515 '{\n'
+ANSWER (43 tokens, 5.1s):
+{
+    "Winner": "Spain",
+    "Loser": "Argentina",
+    "Score": "2-1",
+    "Tournament": "Davis Cup",
+    "City": "Madrid"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[recipe] FORCED TOKEN: 341 ' {\n'
+ANSWER (64 tokens, 7.6s):
+ {
+    "Ingredients": [
+        {
+            "name": "Butter",
+            "amount": 40
+        },
+        {
+            "name": "Garlic",
+            "amount": 2
+        },
+        {
+            "name": "Cream",
+            "amount": 200
+       
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+[weather] FORCED TOKEN: 341 ' {\n'
+ANSWER (36 tokens, 4.4s):
+ {
+    "City": "Chicago",
+    "High temperature": "57",
+    "Wind speed": "18",
+    "Rain chance": "40"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[job] FORCED TOKEN: 515 '{\n'
+ANSWER (63 tokens, 10.3s):
+{
+    "Company": "Brightline Health",
+    "Role": "Data Analyst",
+    "Location": "Boston",
+    "Salary range": "Between $85,000 and $95,000 per year",
+    "Experience": "3 years of experience with SQL"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[model] FORCED TOKEN: 515 '{\n'
+ANSWER (64 tokens, 7.7s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3,000,000",
+        "Architecture": [
+            {
+                "Name": "Grouped-Query Attention",
+                "Description": "Grouped-query attention is
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+base, forced start: clean 7, partial 1, failed 2 of 10
+
+========================================================================
+CONFIG: base + compressed patch (uniform rank 32), forced start
+========================================================================
+
+[person] FORCED TOKEN: 515 '{\n'
+ANSWER (45 tokens, 5.6s):
+{
+    "Name": "Maria Chen",
+    "Age": "34",
+    "City": "Seattle",
+    "Employer": "Northwind Labs",
+    "Role": "leads the payments team"
+}
+VERDICT: partial (parseable=True, keys_match=True, values 4/5)
+
+[product] FORCED TOKEN: 515 '{\n'
+ANSWER (43 tokens, 5.4s):
+{
+    "Product": "AeroPress Go",
+    "Price": "$49.95",
+    "Weight": "323 grams",
+    "Maker": "AeroPress Inc."
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[event] FORCED TOKEN: 341 ' {\n'
+ANSWER (64 tokens, 8.0s):
+ {
+    "Event": "The Riverbend Music Festival",
+    "Date": "August 14, 2027",
+    "City": "Austin, Texas",
+    "Performers": [
+        "The Wild Reeds",
+        "June Harbor"
+    ],
+    "Ticket price": "$
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] FORCED TOKEN: 515 '{\n'
+ANSWER (56 tokens, 7.5s):
+{
+    "Company": "Helix Robotics",
+    "Amount raised": "$12 million",
+    "Round": "Series A",
+    "Lead investor": "Vertex Ventures",
+    "Founded": "2021",
+    "Headquarters": "Denver"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 6/6)
+
+[book] FORCED TOKEN: 341 ' {\n'
+ANSWER (51 tokens, 6.4s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] FORCED TOKEN: 515 '{\n'
+ANSWER (44 tokens, 5.6s):
+{
+    "Winner": "Spain",
+    "Loser": "Argentina",
+    "Score": "2 to 1",
+    "Tournament": "Davis Cup",
+    "City": "Madrid"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[recipe] FORCED TOKEN: 341 ' {\n'
+ANSWER (45 tokens, 5.7s):
+ {
+    "Ingredients": [
+        "40 grams of butter",
+        "2 cloves of garlic",
+        "200 milliliters of cream"
+    ],
+    "Simmer time": "5 minutes"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+[weather] FORCED TOKEN: 341 ' {\n'
+ANSWER (42 tokens, 5.3s):
+ {
+    "City": "Chicago",
+    "High temperature": "57 degrees Fahrenheit",
+    "Wind speed": "18 miles per hour",
+    "Rain chance": "40 percent"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[job] FORCED TOKEN: 515 '{\n'
+ANSWER (63 tokens, 8.0s):
+{
+    "Company": "Brightline Health",
+    "Role": "data analyst",
+    "Location": "Boston",
+    "Salary range": "between $85,000 and $95,000 per year",
+    "Experience": "3 years of experience with SQL"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[model] FORCED TOKEN: 515 '{\n'
+ANSWER (57 tokens, 7.2s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3 billion",
+        "Architecture": [
+            "grouped-query attention"
+        ]
+    },
+    "License": "Apache 2.0"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+base + compressed patch (uniform rank 32), forced start: clean 8, partial 1, failed 1 of 10
+
+========================================================================
+SCOREBOARD (of 10 prompts)
+========================================================================
+unforced  base (no patch): clean 0, partial 0, failed 10
+unforced  base + compressed patch (uniform rank 32): clean 1, partial 0, failed 9
+unforced  base + full delta (fine-tune weights): clean 8, partial 1, failed 1
+forced    base, forced start: clean 7, partial 1, failed 2
+forced    base + compressed patch (uniform rank 32), forced start: clean 8, partial 1, failed 1
+
+Peak RSS: 2111 MB
+Wrote /home/vinay/fc-v04-skill/skill_demo_forced.json
+Wrote /home/vinay/fc-v04-skill/skill_demo_forced_transcript.txt
