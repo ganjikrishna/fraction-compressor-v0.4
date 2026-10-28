@@ -1,0 +1,31 @@
+{
+ "validation": "Muse Spark 1.3 judging of the force-start control test claims",
+ "date": "2026-10-28",
+ "provider": "meta-model-api",
+ "model": "muse-spark-1.3",
+ "source_files": [
+  "results/skill_demo_forced.json",
+  "results/skill_demo.json",
+  "results/skill_demo_recipe.json"
+ ],
+ "note": "First call (6,414 tokens) was returned NOT SUPPORTED on all claims because the prompt named the source files but did not include their contents; the identical claims were re-judged on a second call with a per-prompt evidence extract embedded. Both calls are logged in results/api_usage_log.jsonl.",
+ "verdicts": {
+  "claim_1_unforced_counts": "SUPPORTED",
+  "claim_2_forced_counts_and_match": "SUPPORTED",
+  "claim_3_first_token_margins": "SUPPORTED",
+  "claim_4_interpretation": "TOO STRONG as written: 'small real edge' asserts reality from a 1-prompt difference at n=10, and 'most of the extraction skill was already in the base' is unqualified to one skill, one pair, greedy decoding. Replacement wording supplied (see .md).",
+  "missing_control_objection": "Settled for this test by the forced-start control run; not generalizable beyond this 10-prompt skill/pair."
+ },
+ "usage_second_call": {
+  "completion_tokens": 5425,
+  "prompt_tokens": 1636,
+  "total_tokens": 7061,
+  "completion_tokens_details": {
+   "reasoning_tokens": 4726
+  },
+  "prompt_tokens_details": {
+   "cached_tokens": 0
+  }
+ },
+ "reply_verbatim": "**Per-claim verdicts:**\n\n**CLAIM 1: SUPPORTED. Source: `results/skill_demo.json`**\nPer-prompt recount matches: base 10x failed = 0/0/10; rank-32 patch 1x clean (book) + 9x failed = 1/0/9; full delta 8x clean + 1x partial (person) + 1x failed (event) = 8/1/1.\n\n**CLAIM 2: SUPPORTED. Source: `results/skill_demo_forced.json`**\nBase forced: person,product,event,book,sports,weather,job clean (7) + company partial (1) + recipe,model failed (2) = 7/1/2. Patch forced: product,company,book,sports,recipe,weather,job,model clean (8) + person partial (1) + event failed (1) = 8/1/1, numerically and per-prompt identical to full unforced 8/1/1. All 10 forced tokens listed as `matches_recorded_answer_prefix: True`.\n\n**CLAIM 3: SUPPORTED. Source: `results/skill_demo_recipe.json`**\nRecomputed mean from per-prompt margins: base sum -63.3197/10 = -6.332; rank32_uniform sum -12.9422/10 = -1.2942; full_delta sum 46.0053/10 = 4.6005. Rounded -6.33, -1.29, +4.60 is correct.\n\n**CLAIM 4: TOO STRONG as written.**\nDirection is right, but \"small real edge\" asserts reality from a 1-prompt difference with n=10, and \"most of the extraction skill was already in the base\" is unqualified to one skill, one pair, greedy decoding.\n\n**Earlier missing-control objection:**\nYes, now settled for this test. The objection was: never force-started the plain base to test completion vs trigger. That control was now run: base goes 0/0/10 unforced to 7/1/2 forced, and base first-token margin -6.332 vs full +4.6005 shows strong trigger gating. Knowledge largely present, trigger is main barrier - proven here, not generalizable beyond this 10-prompt skill/pair.\n\n**Required replacement wording for `docs/why-it-matters.md`:**\n\n> In this 10-prompt structured-extraction test on this base/fine-tune pair, most of the tested completion ability was already in the base, and what the fine-tune mainly installs is the decision to start: forcing the fine-tune's first token lifts the base from 0/0/10 to 7/1/2, with first-token margins base -6.33, patch -1.29, fine-tune +4.60. Under the same forced start the rank-32 patch scores 8/1/1, numerically matching the fine-tune's unforced 8/1/1 in this sample - one clean more than the forced base - consistent with the gate being the main story, but with n=10 this does not establish a real beyond-trigger edge and does not generalize beyond this skill, pair and greedy decoding.\n"
+}
