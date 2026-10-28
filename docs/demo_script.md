@@ -1,33 +1,51 @@
 # Demo video script: Fraction Compressor v0.4
 
 Exactly 3 minutes. One idea on screen at a time. Narration is the text under
-each NARRATION heading, nothing else is spoken. Total narration: 429 words,
-about 140 words per minute.
+each NARRATION heading, nothing else is spoken. Total narration: 440 words,
+about 147 words per minute.
 
-## 0:00-0:19 Opening: what is old, what is new
+## 0:00-0:25 The product: a fine-tune as a tiny patch file
 
-ON SCREEN: The repo page, github.com/ganjikrishna/fraction-compressor-v0.4.
-Nothing else.
+ON SCREEN: Title card: FRACTION COMPRESSOR v0.4. Under it, one line: a
+fine-tune squeezed into a patch file, about 19 MB instead of about 1 GB.
+Then the use cases, one at a time: many fine-tunes on one base, no full
+copies stored; send a fine-tune as a small file; switch behavior
+instantly; run on small machines.
 
 NARRATION:
-Quick note on what is old and what is new: the compressor idea and an
-earlier version existed before this week. Everything you will see, the
-runtime, the benchmark, the hot-swap demo, and the patch maker, was built
-fresh this week, in this repo.
+This is Fraction Compressor. It turns a fine-tuned model into one patch
+file: about nineteen megabytes instead of about a gigabyte. It plugs into
+the base model and swaps behavior live, in about a tenth of a second.
+One base carries many fine-tunes, no full copies stored. Send a fine-tune
+as a small file. Switch behavior instantly. Run on small machines.
 
-## 0:19-0:43 The problem: a fine-tune is almost a second model
+## 0:25-0:44 Building on an existing idea: what is old, what is new
+
+ON SCREEN: Two short lists. Published before: 1-bit delta compression,
+BitDelta and Delta-CoMe; our earlier compressor work. Built this week:
+factored runtime; Muse Spark recipes and claim judging; first-token gate
+finding; verification harness. Repo address at the bottom:
+github.com/ganjikrishna/fraction-compressor-v0.4.
+
+NARRATION:
+Honesty: one-bit delta compression is a published idea, BitDelta and
+Delta-CoMe, and our earlier compressor work predates this week. Built
+fresh this week: the factored runtime, Muse Spark designing recipes in
+the loop and judging claims against the files, the first-token gate
+finding, and the verification harness.
+
+## 0:44-1:02 The problem: a fine-tune is almost a second model
 
 ON SCREEN: Two file sizes side by side: the base model, and the full
 difference file at 987,922,432 bytes.
 
 NARRATION:
-A fine-tuned model is a base model plus a patch: the difference between
-the two, as numbers. A normal patch is almost as big as the model itself:
-here, nine hundred eighty-eight million bytes. This tool keeps only a
-fraction of that patch, at about one bit per weight. Ten fine-tunes, ten
-near-full models to carry.
+A fine-tune is a base model plus a patch: the difference between them.
+That difference alone: nine hundred eighty-eight million bytes, almost
+the model itself. It keeps a fraction: about nought point three bits per
+weight, all in. Ten fine-tunes, ten near-full models.
 
-## 0:43-1:11 Do it yourself: clone, quickstart, make a patch
+## 1:02-1:21 Do it yourself: clone, quickstart, make a patch
 
 ON SCREEN, in real steps, typed in a terminal:
 1. `git clone https://github.com/ganjikrishna/fraction-compressor-v0.4`
@@ -37,13 +55,12 @@ ON SCREEN, in real steps, typed in a terminal:
    987,922,432 bytes.
 
 NARRATION:
-You can do this yourself. It takes two models: a base, and a fine-tuned
-version of that same base. Clone the repo. Run the quickstart: it squeezes
-a sample patch and prints the size and the error. Then run the patch maker:
-it subtracts the fine-tuned model from its base, squeezes the difference,
-and writes one small file, about nineteen million bytes.
+You can do this yourself. You need two models: a base and its fine-tune.
+Clone the repo. Run the quickstart: it squeezes a sample patch, printing
+size and error. Run the patch maker: it subtracts the fine-tune from its
+base and writes one file, about nineteen million bytes.
 
-## 1:11-1:47 The demo moment: swap a file, change the behavior
+## 1:21-1:48 The demo moment: swap a file, change the behavior
 
 ON SCREEN: `python3 examples/hotswap_demo.py` running. First the base model
 answers the strict JSON prompt (the "Return ONLY a JSON object" prompt for
@@ -54,53 +71,57 @@ and `JSON SCORE: parseable=True`. Then the capital of Japan answers:
 base loops on a wrong city, patched answers one clean line.
 
 NARRATION:
-Now the demo. One base model, loaded once. I ask for data in strict JSON:
-a fixed format a program can read, nothing extra. The base model writes
-the right object, then keeps talking, so the answer fails the format
-check. Watch: the patch file swaps in, in about a tenth of a second.
-Same question again: exactly the object, nothing else. The check passes.
-Same patch, another question: asked the capital of Japan, the base model
-repeats a wrong city; with the patch, one clean line.
+One base model, loaded once. I ask for strict JSON, a format programs
+can read. The base writes the right object, then rambles on, failing the
+format check. Watch: the patch swaps in, about a tenth of a second.
+Same question again: exactly the object, check passed. Same patch, new
+question: the capital of Japan. Base repeats a wrong city; the patch,
+one clean line.
 
-## 1:47-2:27 The numbers: smaller file, tested on fresh questions
+## 1:48-2:31 The numbers: smaller file, tested on fresh questions
 
 ON SCREEN: The size table from the demo (full delta 987,922,432 bytes;
 patches about 19.4 million bytes, 51x smaller), then the benchmark result
 lines: 96 fresh questions, gap closed 23.2% vs 2.1%, and the second model
-pair name, SmolLM2-360M.
+pair name, SmolLM2-360M. Then the scale test lines: Qwen2.5-1.5B, Spark
+recipe 38,623,232 bytes inside the 39,046,144 byte human budget, margin
+0.134 nats on 96 fresh questions, patch about 39 MB vs 3,087,138,816 byte
+full difference, about 80x smaller. Then the baseline lines: at the plain
+1-bit floor price of 61,745,828 bytes, plain BitDelta-style init gap
+closed 43.6% vs factored rank-108 gap closed 38.5% at 61,258,816 bytes;
+at 19,434,496 bytes no plain 1-bit delta fits, only the factored patch.
 
 NARRATION:
-The patch file is fifty-one times smaller: about nineteen million bytes
-against nine hundred eighty-eight million. The measure is a score: how
-strongly the model backs the right answer. On ninety-six fresh questions
-Spark wrote for this, unseen by the search, Spark's winning recipe,
-trimmed to the human recipe's byte budget, closes twenty-three point two
-percent of the gap to the full patch. The human recipe closes two point
-one. That winner is mlp_behemoth_lite. Its parent, mlp_behemoth, spent
-more bytes than the budget allows, so it does not count. The same pattern
-held on a second model pair, SmolLM2.
+The patch is fifty-one times smaller: nineteen million bytes against
+nine hundred eighty-eight million. The measure: how strongly the model
+backs the answer. On ninety-six questions, Spark's recipe at the human
+budget closes twenty-three point two percent of the gap; the human
+recipe, two point one. Winner: mlp_behemoth_lite; its parent overspent
+and does not count. Same pattern on SmolLM2; on a model three times
+bigger, Spark's recipe won by nought point one three four nats, inside
+budget. Honestly: at sixty-two million bytes a one-bit patch closes more
+gap. Our win is reach: at nineteen million bytes, where no plain one-bit
+patch fits, ours works.
 
-## 2:27-2:42 Checked, not just claimed
+## 2:31-2:44 Checked, not just claimed
 
 ON SCREEN: Two short lines, one at a time: the Muse Spark judging record
 citing its result files; then the audit line, 41 of 41 checks passed.
 
 NARRATION:
 Then we checked ourselves. Muse Spark judged every headline claim and
-had to cite the result file behind each one. And a quantum computer's
-random numbers picked the audit sample: all forty-one audit checks
-passed.
+had to cite the file behind each one. A quantum computer's random
+numbers picked the audit sample: all forty-one audit checks passed.
 
-## 2:42-3:00 Close: a chip, not a note
+## 2:44-3:00 Close: a chip, not a note
 
 ON SCREEN: The base model with the small patch file next to it. End card:
 repo address.
 
 NARRATION:
 This is not a memory file. A memory file is a note the model reads; this
-patch is a small chip swapped inside the machine, numbers that change the
-model's math. Fine-tunes you can carry and swap like files: one base
-model, many small behaviors.
+patch is a chip swapped inside the machine, numbers that change the
+model's math. Fine-tunes to carry and swap: one base, many behaviors.
 
 ---
 
