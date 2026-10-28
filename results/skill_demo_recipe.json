@@ -1,0 +1,442 @@
+{
+  "test": "allocation test: same bytes (19,434,496 B budget), smarter placement vs uniform rank 32",
+  "skill_pair": "Qwen/Qwen2.5-0.5B base + numind/NuExtract-1.5-tiny (MIT) JSON extraction",
+  "recipe_generation": {
+    "provider": "baseten",
+    "model": "meta-models/muse-spark-open-1026",
+    "max_tokens": 16000,
+    "budget_bytes": 19434496,
+    "prompt": "You are proposing compression recipes for a factored 1-bit weight-delta format. A recipe assigns one integer rank to each layer TYPE; that rank is used for that layer type in all 24 transformer blocks (the embedding is a single matrix). The stored size of one matrix at rank r is priced exactly as:\n\n  bytes(matrix, r) = ceil(rows * r / 8) + 4 * rows + 2 * cols * r\n\nLayers (rows x cols of the delta matrix):\n  embed: delta matrix 151936 x 896, rank may be 0..896\n  attn.q_proj: delta matrix 896 x 896, rank may be 0..896\n  attn.k_proj: delta matrix 128 x 896, rank may be 0..128\n  attn.v_proj: delta matrix 128 x 896, rank may be 0..128\n  attn.o_proj: delta matrix 896 x 896, rank may be 0..896\n  mlp.gate: delta matrix 4864 x 896, rank may be 0..896\n  mlp.up: delta matrix 4864 x 896, rank may be 0..896\n  mlp.down: delta matrix 896 x 4864, rank may be 0..896\n\nThe total size of a recipe is bytes(embed) + 24 * (sum of bytes over the other 7 layer types), and it must be <= 19434496 bytes. That is exactly the cost of the uniform rank-32 recipe on this model; you have the same bytes, spend them differently.\n\nThe model pair is Qwen2.5-0.5B base and NuExtract-1.5-tiny, a fine-tune for structured JSON extraction (read a text and a JSON template, answer with the filled template). The finding you are designing against: this skill is gated by the FIRST generated token. The fine-tune starts the JSON; the plain base emits end-of-text immediately and answers nothing (0 of 10 test prompts). Our uniform rank-32 patch flips that gate on only 1 of 10 prompts (on the 9 others the patched model still stops immediately), even though the one extraction it does start is fully correct. Bigger uniform patches barely help (rank 64 and rank 128 each flip 2 of 10). So placement, not size, is the open question. Weigh protecting the embedding (it feeds every token position and, with tied weights, the output head) and the output-side layers (attn.o_proj, mlp.down) that shape the final logits, if you judge that is where the start-vs-stop decision lives.\n\nPropose exactly 5 recipes, ordered best-first: put the recipe you recommend most first. Make them genuinely different from each other and from uniform: uneven allocations are the point. Every recipe must include every layer name exactly once in its \"ranks\" object, with an integer rank (0 is allowed and means that layer type's delta is dropped).\n\nReply with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape:\n{\"recipes\": [{\"name\": \"<short name>\", \"reason\": \"<one sentence>\", \"ranks\": {\"embed\": 0, \"attn.q_proj\": 0, \"attn.k_proj\": 0, \"attn.v_proj\": 0, \"attn.o_proj\": 0, \"mlp.gate\": 0, \"mlp.up\": 0, \"mlp.down\": 0}}]}\nReplace the zeros with your ranks. Check your arithmetic: each recipe's total (embed once + 24 blocks) must be <= 19434496 bytes.",
+    "attempts": [
+      {
+        "attempt": 1,
+        "time": "2026-10-27T21:47:14.239509+00:00",
+        "elapsed_s": 59.48,
+        "usage": {
+          "prompt_tokens": 912,
+          "completion_tokens": 16000,
+          "total_tokens": 16912,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 11131,
+            "audio_tokens": 0,
+            "reasoning_tokens": 15643,
+            "rejected_prediction_tokens": 22959
+          }
+        },
+        "reasoning_chars": 50319,
+        "content_chars": 1000,
+        "parse_error": "Expecting ',' delimiter: line 1 column 989 (char 988)"
+      },
+      {
+        "attempt": 2,
+        "time": "2026-10-27T21:48:13.862505+00:00",
+        "elapsed_s": 32.45,
+        "usage": {
+          "prompt_tokens": 912,
+          "completion_tokens": 9899,
+          "total_tokens": 10811,
+          "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 128
+          },
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 7099,
+            "audio_tokens": 0,
+            "reasoning_tokens": 9300,
+            "rejected_prediction_tokens": 12501
+          }
+        },
+        "reasoning_chars": 27433,
+        "content_chars": 1682
+      }
+    ],
+    "recipes_returned": [
+      {
+        "name": "Gatekeeper Embed+O",
+        "reason": "Maximizes the tied embed and cheap-to-expensive output ratio by pushing embed to 382 and o_proj to 64 with minimal down to flip the first-token EOS vs JSON gate.",
+        "ranks": {
+          "embed": 382,
+          "attn.q_proj": 16,
+          "attn.k_proj": 0,
+          "attn.v_proj": 8,
+          "attn.o_proj": 64,
+          "mlp.gate": 0,
+          "mlp.up": 0,
+          "mlp.down": 24
+        }
+      },
+      {
+        "name": "O-Proj Centric Switch",
+        "reason": "Tests o_proj as the primary switch by allocating rank 96 to o_proj with balanced q/k/v for template parsing and moderate embed/down.",
+        "ranks": {
+          "embed": 153,
+          "attn.q_proj": 24,
+          "attn.k_proj": 16,
+          "attn.v_proj": 16,
+          "attn.o_proj": 96,
+          "mlp.gate": 0,
+          "mlp.up": 0,
+          "mlp.down": 32
+        }
+      },
+      {
+        "name": "Downstream Logit Shaper",
+        "reason": "Isolates final logit shaping by spending budget on expensive mlp.down at 48 and o_proj at 48 while zeroing all other attention and MLP inputs.",
+        "ranks": {
+          "embed": 196,
+          "attn.q_proj": 0,
+          "attn.k_proj": 0,
+          "attn.v_proj": 0,
+          "attn.o_proj": 48,
+          "mlp.gate": 0,
+          "mlp.up": 0,
+          "mlp.down": 48
+        }
+      },
+      {
+        "name": "Attention-Only Backbone",
+        "reason": "Preserves full attention pathway with q/k/v at 32 and o at 64 while dropping gate/up entirely to see if extraction lives in attention not MLP.",
+        "ranks": {
+          "embed": 136,
+          "attn.q_proj": 32,
+          "attn.k_proj": 32,
+          "attn.v_proj": 32,
+          "attn.o_proj": 64,
+          "mlp.gate": 0,
+          "mlp.up": 0,
+          "mlp.down": 32
+        }
+      },
+      {
+        "name": "MLP-Preserve Ablation",
+        "reason": "Inverts the hypothesis by keeping mlp.gate/up at 72 to test JSON structure generation while thinning output layers to rank 16.",
+        "ranks": {
+          "embed": 144,
+          "attn.q_proj": 24,
+          "attn.k_proj": 8,
+          "attn.v_proj": 8,
+          "attn.o_proj": 16,
+          "mlp.gate": 72,
+          "mlp.up": 72,
+          "mlp.down": 16
+        }
+      }
+    ],
+    "validation": [
+      {
+        "index": 0,
+        "name": "Gatekeeper Embed+O",
+        "valid": true,
+        "errors": [],
+        "total_bytes": 19434400
+      },
+      {
+        "index": 1,
+        "name": "O-Proj Centric Switch",
+        "valid": true,
+        "errors": [],
+        "total_bytes": 19433392
+      },
+      {
+        "index": 2,
+        "name": "Downstream Logit Shaper",
+        "valid": true,
+        "errors": [],
+        "total_bytes": 19427008
+      },
+      {
+        "index": 3,
+        "name": "Attention-Only Backbone",
+        "valid": true,
+        "errors": [],
+        "total_bytes": 19371904
+      },
+      {
+        "index": 4,
+        "name": "MLP-Preserve Ablation",
+        "valid": true,
+        "errors": [],
+        "total_bytes": 19412224
+      }
+    ]
+  },
+  "chosen_recipe": {
+    "name": "Gatekeeper Embed+O",
+    "reason": "Maximizes the tied embed and cheap-to-expensive output ratio by pushing embed to 382 and o_proj to 64 with minimal down to flip the first-token EOS vs JSON gate.",
+    "ranks": {
+      "embed": 382,
+      "attn.q_proj": 16,
+      "attn.k_proj": 0,
+      "attn.v_proj": 8,
+      "attn.o_proj": 64,
+      "mlp.gate": 0,
+      "mlp.up": 0,
+      "mlp.down": 24
+    }
+  },
+  "chosen_recipe_price_bytes": 19434400,
+  "patch_file_bytes_on_disk": 18796330,
+  "verify": {
+    "result": "PASS",
+    "log_tail": [
+      "  b12_attn_q_proj (model.layers.12.self_attn.q_proj.weight, rank 16): factored-vs-dense max diff 7.373e-18; file-vs-fresh-quantize rel diff 2.153e-04",
+      "  b23_mlp_down (model.layers.23.mlp.down_proj.weight, rank 24): factored-vs-dense max diff 1.041e-17; file-vs-fresh-quantize rel diff 1.867e-04",
+      "  worst factored-vs-dense max diff: 4.718e-16 (tolerance 1e-06)",
+      "  worst file-vs-fresh rel diff:     2.597e-04 (tolerance 1e-02; the gap is the fp16 storage rounding of V, by design)",
+      "  peak RSS: 5998 MB",
+      "VERIFY: PASS"
+    ]
+  },
+  "demo_run": {
+    "config_label": "base + compressed patch (recipe Gatekeeper Embed+O)",
+    "counts": {
+      "clean": 0,
+      "partial": 0,
+      "failed": 10
+    },
+    "per_prompt": {
+      "person": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Name\": \"\",\n    \"Age\": \"\",\n    \"City\": \"\",\n    \"Employer\": \"\",\n    \"Role\": \"\"\n}\n### Text:\nMaria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 8.729,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 5,
+        "verdict": "failed"
+      },
+      "product": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Product\": \"\",\n    \"Price\": \"\",\n    \"Weight\": \"\",\n    \"Maker\": \"\"\n}\n### Text:\nThe AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 10.099,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 4,
+        "verdict": "failed"
+      },
+      "event": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Event\": \"\",\n    \"Date\": \"\",\n    \"City\": \"\",\n    \"Performers\": [],\n    \"Ticket price\": \"\"\n}\n### Text:\nThe Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 11.457,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 6,
+        "verdict": "failed"
+      },
+      "company": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Company\": \"\",\n    \"Amount raised\": \"\",\n    \"Round\": \"\",\n    \"Lead investor\": \"\",\n    \"Founded\": \"\",\n    \"Headquarters\": \"\"\n}\n### Text:\nOn March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 12.527,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 6,
+        "verdict": "failed"
+      },
+      "book": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Title\": \"\",\n    \"Author\": \"\",\n    \"Year\": \"\",\n    \"Pages\": \"\",\n    \"Publisher\": \"\"\n}\n### Text:\n'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 13.798,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 5,
+        "verdict": "failed"
+      },
+      "sports": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Winner\": \"\",\n    \"Loser\": \"\",\n    \"Score\": \"\",\n    \"Tournament\": \"\",\n    \"City\": \"\"\n}\n### Text:\nIn Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 10.209,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 4,
+        "verdict": "failed"
+      },
+      "recipe": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Ingredients\": [],\n    \"Simmer time\": \"\"\n}\n### Text:\nTo make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 8.352,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 3,
+        "verdict": "failed"
+      },
+      "weather": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"City\": \"\",\n    \"High temperature\": \"\",\n    \"Wind speed\": \"\",\n    \"Rain chance\": \"\"\n}\n### Text:\nTomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 9.582,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 4,
+        "verdict": "failed"
+      },
+      "job": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Company\": \"\",\n    \"Role\": \"\",\n    \"Location\": \"\",\n    \"Salary range\": \"\",\n    \"Experience\": \"\"\n}\n### Text:\nBrightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 10.684,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 4,
+        "verdict": "failed"
+      },
+      "model": {
+        "prompt": "<|input|>\n### Template:\n{\n    \"Model\": {\n        \"Name\": \"\",\n        \"Number of parameters\": \"\",\n        \"Architecture\": []\n    },\n    \"License\": \"\"\n}\n### Text:\nToday we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.\n\n<|output|>",
+        "answer": "",
+        "generated_tokens": 0,
+        "seconds": 11.488,
+        "parseable": false,
+        "keys_match": false,
+        "value_hits": 0,
+        "value_total": 3,
+        "verdict": "failed"
+      }
+    },
+    "reference_counts_reproduced": {
+      "base (no patch)": {
+        "clean": 0,
+        "partial": 0,
+        "failed": 10
+      },
+      "base + full delta (fine-tune weights)": {
+        "clean": 8,
+        "partial": 1,
+        "failed": 1
+      }
+    }
+  },
+  "first_token_margins": {
+    "measure": "first-token logprob margin",
+    "definition": "margin = logprob(fine-tune's actual first generated token) - logprob(end-of-text 151643) at the first generation position, natural log; positive means the gate is open (starting the JSON beats stopping)",
+    "per_prompt": {
+      "person": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 5.466,
+        "base": -6.6637,
+        "rank32_uniform": -1.881,
+        "spark_recipe": -4.59
+      },
+      "product": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 4.5432,
+        "base": -7.0406,
+        "rank32_uniform": -2.2765,
+        "spark_recipe": -4.9983
+      },
+      "event": {
+        "ft_first_token": 341,
+        "ft_first_token_text": " {\n",
+        "full_delta": 3.2111,
+        "base": -4.7228,
+        "rank32_uniform": -0.4662,
+        "spark_recipe": -3.2616
+      },
+      "company": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 8.0449,
+        "base": -7.1664,
+        "rank32_uniform": -0.5471,
+        "spark_recipe": -4.5278
+      },
+      "book": {
+        "ft_first_token": 341,
+        "ft_first_token_text": " {\n",
+        "full_delta": 6.5009,
+        "base": -6.7498,
+        "rank32_uniform": 0.7316,
+        "spark_recipe": -4.6629
+      },
+      "sports": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 4.4924,
+        "base": -5.3831,
+        "rank32_uniform": -1.0533,
+        "spark_recipe": -3.8621
+      },
+      "recipe": {
+        "ft_first_token": 341,
+        "ft_first_token_text": " {\n",
+        "full_delta": 2.7689,
+        "base": -3.3878,
+        "rank32_uniform": -1.8888,
+        "spark_recipe": -3.4504
+      },
+      "weather": {
+        "ft_first_token": 341,
+        "ft_first_token_text": " {\n",
+        "full_delta": 3.1694,
+        "base": -5.0015,
+        "rank32_uniform": -2.7451,
+        "spark_recipe": -3.7197
+      },
+      "job": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 2.537,
+        "base": -8.0339,
+        "rank32_uniform": -2.2987,
+        "spark_recipe": -4.8059
+      },
+      "model": {
+        "ft_first_token": 515,
+        "ft_first_token_text": "{\n",
+        "full_delta": 5.2715,
+        "base": -9.1701,
+        "rank32_uniform": -0.5171,
+        "spark_recipe": -3.5434
+      }
+    },
+    "mean_margin": {
+      "base": -6.332,
+      "full_delta": 4.6005,
+      "rank32_uniform": -1.2942,
+      "spark_recipe": -4.1422
+    },
+    "gate_open_count_of_10": {
+      "base": 0,
+      "full_delta": 10,
+      "rank32_uniform": 1,
+      "spark_recipe": 0
+    },
+    "peak_rss_mb": 2354.3
+  },
+  "comparison_at_equal_or_more_bytes": {
+    "uniform rank 32 (19,434,496 B)": {
+      "clean": 1,
+      "mean_margin": -1.2942
+    },
+    "spark recipe Gatekeeper Embed+O (19,434,400 B)": {
+      "clean": 0,
+      "mean_margin": -4.1422
+    },
+    "uniform rank 64 (37,044,736 B)": {
+      "clean": 2
+    },
+    "uniform rank 128 (72,265,216 B)": {
+      "clean": 2
+    }
+  },
+  "conclusion": "Placement did not beat size at equal bytes; it did worse. The Spark recipe's radical reallocation (embed 382, mlp.gate/up dropped to 0) opened 0 of 10 gates and its mean first-token margin (-4.14) is far below uniform rank 32 (-1.29). The gate-open counts measured from margins (base 0, rank32 1, recipe 0, full delta 10) exactly match the generation outcomes. Neither bigger uniform patches (2/10 at rank 128) nor this reallocation opens the gate at these budgets; uniform rank 32 is closest per byte."
+}

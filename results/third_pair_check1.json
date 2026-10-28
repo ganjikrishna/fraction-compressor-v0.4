@@ -1,0 +1,181 @@
+{
+  "check": "third_pair_spark_recipes_schema_valid",
+  "pair": "llama-3.2-1b",
+  "provider": "baseten",
+  "model": "meta-models/muse-spark-open-1026",
+  "layers": {
+    "embed": [
+      128256,
+      2048
+    ],
+    "attn.q_proj": [
+      2048,
+      2048
+    ],
+    "attn.k_proj": [
+      512,
+      2048
+    ],
+    "attn.v_proj": [
+      512,
+      2048
+    ],
+    "attn.o_proj": [
+      2048,
+      2048
+    ],
+    "mlp.gate": [
+      8192,
+      2048
+    ],
+    "mlp.up": [
+      8192,
+      2048
+    ],
+    "mlp.down": [
+      2048,
+      8192
+    ]
+  },
+  "budget_bytes": 2656256,
+  "budget_basis": "uniform rank 32 on every layer of the Llama 3.2 1B block set, priced by factored.storage_bytes",
+  "prompt": "You are proposing compression recipes for a factored 1-bit weight-delta format. A recipe assigns an integer rank to each layer of one transformer block set. The stored size of one layer at rank r is priced exactly as:\n\n  bytes(layer, r) = ceil(rows * r / 8) + 4 * rows + 2 * cols * r\n\nLayers (rows x cols of the delta matrix):\n  embed: delta matrix 128256 x 2048, rank may be 0..2048\n  attn.q_proj: delta matrix 2048 x 2048, rank may be 0..2048\n  attn.k_proj: delta matrix 512 x 2048, rank may be 0..512\n  attn.v_proj: delta matrix 512 x 2048, rank may be 0..512\n  attn.o_proj: delta matrix 2048 x 2048, rank may be 0..2048\n  mlp.gate: delta matrix 8192 x 2048, rank may be 0..2048\n  mlp.up: delta matrix 8192 x 2048, rank may be 0..2048\n  mlp.down: delta matrix 2048 x 8192, rank may be 0..2048\n\nThe total size of a recipe is the sum of bytes(layer, rank) over all layers and must be <= 2656256 bytes (that is the cost of the uniform rank-32 recipe; you have the same bytes, spend them differently).\n\nPropose exactly 5 recipes. Make them genuinely different from each other and from the uniform recipe: uneven allocations are the point. Ideas you may use or ignore: starve some layers to rank 0 and feed others, front-load early layers, front-load the MLP, protect attention output, protect the embedding. Every recipe must include every layer name exactly once in its \"ranks\" object, with an integer rank (0 is allowed and means the layer's delta is dropped).\n\nReply with ONLY a JSON object, no markdown fences, no commentary, in exactly this shape:\n{\"recipes\": [{\"name\": \"<short name>\", \"reason\": \"<one sentence>\", \"ranks\": {\"embed\": 0, \"attn.q_proj\": 0, \"attn.k_proj\": 0, \"attn.v_proj\": 0, \"attn.o_proj\": 0, \"mlp.gate\": 0, \"mlp.up\": 0, \"mlp.down\": 0}}]}\nReplace the zeros with your ranks. Check your arithmetic: each recipe's total must be <= 2656256 bytes.",
+  "attempts": [
+    {
+      "attempt": 1,
+      "time": "2026-10-27T21:27:58.415797+00:00",
+      "elapsed_s": 14.73,
+      "usage": {
+        "prompt_tokens": 694,
+        "completion_tokens": 4460,
+        "total_tokens": 5154,
+        "prompt_tokens_details": {
+          "audio_tokens": 0,
+          "cached_tokens": 128
+        },
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 3368,
+          "audio_tokens": 0,
+          "reasoning_tokens": 3913,
+          "rejected_prediction_tokens": 4276
+        }
+      },
+      "reasoning_chars": 10797,
+      "content_chars": 1442
+    }
+  ],
+  "elapsed_s_total": 14.73,
+  "raw_content": "{\"recipes\": [{\"name\": \"mlp_monster_kv_starved\", \"reason\": \"Zero out k/v attention to fund massive mlp gate/up at 64 and down at 47 while keeping embed light.\", \"ranks\": {\"embed\": 16, \"attn.q_proj\": 32, \"attn.k_proj\": 0, \"attn.v_proj\": 0, \"attn.o_proj\": 32, \"mlp.gate\": 64, \"mlp.up\": 64, \"mlp.down\": 47}}, {\"name\": \"attention_fortress\", \"reason\": \"Front-loads capacity into Q/K/V/O attention to preserve steering while trimming mlp up/down.\", \"ranks\": {\"embed\": 8, \"attn.q_proj\": 80, \"attn.k_proj\": 64, \"attn.v_proj\": 64, \"attn.o_proj\": 80, \"mlp.gate\": 32, \"mlp.up\": 16, \"mlp.down\": 24}}, {\"name\": \"embed_guardian\", \"reason\": \"Protects the large 128k vocab embedding with rank 80 and starves down projection to zero.\", \"ranks\": {\"embed\": 80, \"attn.q_proj\": 16, \"attn.k_proj\": 16, \"attn.v_proj\": 16, \"attn.o_proj\": 16, \"mlp.gate\": 16, \"mlp.up\": 16, \"mlp.down\": 0}}, {\"name\": \"no_embed_mlp_spread\", \"reason\": \"Drops embed delta entirely to evenly boost attention Q/O and both large mlp gate/up with moderate down.\", \"ranks\": {\"embed\": 0, \"attn.q_proj\": 64, \"attn.k_proj\": 32, \"attn.v_proj\": 32, \"attn.o_proj\": 64, \"mlp.gate\": 80, \"mlp.up\": 80, \"mlp.down\": 24}}, {\"name\": \"o_down_heavy\", \"reason\": \"Emphasizes attention output and mlp down projection for routing capacity with minimal k/v and embed.\", \"ranks\": {\"embed\": 4, \"attn.q_proj\": 48, \"attn.k_proj\": 8, \"attn.v_proj\": 8, \"attn.o_proj\": 96, \"mlp.gate\": 20, \"mlp.up\": 20, \"mlp.down\": 64}}]}",
+  "recipes": [
+    {
+      "name": "mlp_monster_kv_starved",
+      "reason": "Zero out k/v attention to fund massive mlp gate/up at 64 and down at 47 while keeping embed light.",
+      "ranks": {
+        "embed": 16,
+        "attn.q_proj": 32,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 32,
+        "mlp.gate": 64,
+        "mlp.up": 64,
+        "mlp.down": 47
+      }
+    },
+    {
+      "name": "attention_fortress",
+      "reason": "Front-loads capacity into Q/K/V/O attention to preserve steering while trimming mlp up/down.",
+      "ranks": {
+        "embed": 8,
+        "attn.q_proj": 80,
+        "attn.k_proj": 64,
+        "attn.v_proj": 64,
+        "attn.o_proj": 80,
+        "mlp.gate": 32,
+        "mlp.up": 16,
+        "mlp.down": 24
+      }
+    },
+    {
+      "name": "embed_guardian",
+      "reason": "Protects the large 128k vocab embedding with rank 80 and starves down projection to zero.",
+      "ranks": {
+        "embed": 80,
+        "attn.q_proj": 16,
+        "attn.k_proj": 16,
+        "attn.v_proj": 16,
+        "attn.o_proj": 16,
+        "mlp.gate": 16,
+        "mlp.up": 16,
+        "mlp.down": 0
+      }
+    },
+    {
+      "name": "no_embed_mlp_spread",
+      "reason": "Drops embed delta entirely to evenly boost attention Q/O and both large mlp gate/up with moderate down.",
+      "ranks": {
+        "embed": 0,
+        "attn.q_proj": 64,
+        "attn.k_proj": 32,
+        "attn.v_proj": 32,
+        "attn.o_proj": 64,
+        "mlp.gate": 80,
+        "mlp.up": 80,
+        "mlp.down": 24
+      }
+    },
+    {
+      "name": "o_down_heavy",
+      "reason": "Emphasizes attention output and mlp down projection for routing capacity with minimal k/v and embed.",
+      "ranks": {
+        "embed": 4,
+        "attn.q_proj": 48,
+        "attn.k_proj": 8,
+        "attn.v_proj": 8,
+        "attn.o_proj": 96,
+        "mlp.gate": 20,
+        "mlp.up": 20,
+        "mlp.down": 64
+      }
+    }
+  ],
+  "validation": [
+    {
+      "index": 0,
+      "name": "mlp_monster_kv_starved",
+      "valid": true,
+      "errors": [],
+      "total_bytes": 2645248
+    },
+    {
+      "index": 1,
+      "name": "attention_fortress",
+      "valid": true,
+      "errors": [],
+      "total_bytes": 2642176
+    },
+    {
+      "index": 2,
+      "name": "embed_guardian",
+      "valid": true,
+      "errors": [],
+      "total_bytes": 2653696
+    },
+    {
+      "index": 3,
+      "name": "no_embed_mlp_spread",
+      "valid": true,
+      "errors": [],
+      "total_bytes": 2649088
+    },
+    {
+      "index": 4,
+      "name": "o_down_heavy",
+      "valid": true,
+      "errors": [],
+      "total_bytes": 2650752
+    }
+  ],
+  "valid_count": 5,
+  "recipes_returned": 5,
+  "verdict": "GO"
+}

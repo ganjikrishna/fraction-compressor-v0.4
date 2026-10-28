@@ -1,0 +1,863 @@
+{
+  "stage": "third_pair_stage2_real_model_task_benchmark",
+  "date": "2026-10-27",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, qwen-test venv: python 3.14 + numpy 2.5.4 + tokenizers 0.23.3)",
+  "model_pair": {
+    "base": "~/llama-test/data/base/model.safetensors (meta-llama/Llama-3.2-1B, BF16, Llama 3.2 Community License)",
+    "instruct": "~/llama-test/data/instruct/model.safetensors (meta-llama/Llama-3.2-1B-Instruct, BF16, Llama 3.2 Community License)",
+    "local_note": "downloaded on the Muse VM through Vinay's approved Hugging Face access (license request approved Oct 27) and copied to Flash; the pair was the Phase 3 item blocked by the HF license gate until the approval landed",
+    "matrices": "embedding (tied, also the LM head) + 16 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 113 delta matrices"
+  },
+  "probe_set": {
+    "source": "Signet probe items (ITEMS) imported at run time from ~/qwen-test/signet_battery.py on Flash",
+    "label": "pre-existing evaluation data: 24 hand-written probe items from the prior Fraction Compressor work (v0.1-v0.3 / Signet), not created during this event",
+    "n_items": 24,
+    "buckets": {
+      "knowledge": 8,
+      "instruction": 8,
+      "math": 8
+    }
+  },
+  "method": {
+    "configs_per_recipe": "base (no delta), full_delta (Instruct weights == base + full delta on every tensor), factored_delta (base + factored delta per the recipe's rank map)",
+    "factored_application": "rank map applies per layer type across all 16 blocks plus the tied embedding (113 matrices); factors built with factored.quantize_delta's construction via one exact SVD per matrix sliced per rank (validated against quantize_delta itself, see build_validation; the embedding's exact SVD is computed through its Gram matrix for memory, see the script header); rank 0 drops the matrix's delta; RMSNorm weights (no biases exist in this architecture) stay at base values in factored configs",
+    "scoring": "chat-formatted prompt (Llama-3 format, system line 'You are a helpful assistant.'); target logprob = summed log-probability of the answer tokens (Signet convention); accuracy = first-token accuracy; gap_closed = (factored - base) / (full - base) on mean target logprob",
+    "forward_pass": "NumPy Llama 3.2 forward written for this pair (Llama-3 RoPE scaling theta 500000 factor 32, RMSNorm eps 1e-5, GQA 32 Q / 8 KV heads, tied embeddings); no external Signet battery exists for this pair, so it is validated by internal consistency (see forward_validation)",
+    "stage1_role": "filter only: no winner is declared from Stage 1 matrix error; the ranking below is by Stage 2 task score",
+    "repricing": "every recipe re-priced on real shapes with factored.storage_bytes before comparison; generic block-set totals from the recipe generation reported alongside",
+    "recipe_generation": {
+      "provider": "baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "budget_bytes_generic": 2656256,
+      "recipes_file": "results/third_pair_check1.json",
+      "stage1_file": "~/fc-v04-sweep3/stage1.json (Flash workdir)",
+      "stage1_ranking": [
+        {
+          "name": "embed_guardian",
+          "relative_frobenius_error": 0.904229
+        },
+        {
+          "name": "mlp_monster_kv_starved",
+          "relative_frobenius_error": 0.907325
+        },
+        {
+          "name": "attention_fortress",
+          "relative_frobenius_error": 0.92039
+        },
+        {
+          "name": "o_down_heavy",
+          "relative_frobenius_error": 0.929656
+        },
+        {
+          "name": "no_embed_mlp_spread",
+          "relative_frobenius_error": 0.958697
+        }
+      ],
+      "stage1_human_uniform_rank32": 0.905807
+    }
+  },
+  "build_validation": {
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 9.313225746154785e-10,
+      "model.layers.8.mlp.gate_proj.weight": 2.3283064365386963e-10,
+      "model.layers.15.self_attn.o_proj.weight": 5.820766091346741e-11
+    },
+    "quantize_from_svd_vs_quantize_delta": [
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 16,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 32,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 48,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 64,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 80,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      },
+      {
+        "matrix": "model.layers.0.self_attn.k_proj.weight",
+        "rank": 8,
+        "max_abs_diff_U": 0.0,
+        "max_abs_diff_V": 0.0
+      }
+    ],
+    "build_wall_s": 668.2,
+    "build_peak_rss_mb": 6372.4
+  },
+  "forward_validation": {
+    "knowledge": {
+      "base_mean_target_logprob": -13.35785286689982,
+      "full_mean_target_logprob": -7.231942607183979,
+      "gap_full_minus_base": 6.125910259715842
+    },
+    "instruction": {
+      "base_mean_target_logprob": -17.761026205239418,
+      "full_mean_target_logprob": -12.06747120196436,
+      "gap_full_minus_base": 5.693555003275058
+    },
+    "math": {
+      "base_mean_target_logprob": -10.537456296463109,
+      "full_mean_target_logprob": -2.89632697698631,
+      "gap_full_minus_base": 7.641129319476799
+    }
+  },
+  "forward_validation_verdict": {
+    "method": "internal consistency (no external Signet battery exists for this pair): graft check base + (instruct - base) == instruct on 3 sampled tensors; quantize_from_svd cross-checked against factored.quantize_delta on block matrices; the full-delta config must beat base overall on identical prompts",
+    "overall_gap_full_minus_base": 6.486864860822567,
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 9.313225746154785e-10,
+      "model.layers.8.mlp.gate_proj.weight": 2.3283064365386963e-10,
+      "model.layers.15.self_attn.o_proj.weight": 5.820766091346741e-11
+    },
+    "quantize_from_svd_max_abs_diff": 0.0,
+    "verdict": "PASS"
+  },
+  "gap_closed_note": null,
+  "full_delta_fp16_bytes_real_shapes": 2471493632,
+  "shared_configs": {
+    "base": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.0,
+        "mean_target_logprob": -13.88544512286745
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -13.35785286689982
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -17.761026205239418
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -10.537456296463109
+        }
+      }
+    },
+    "full_delta": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.125,
+        "mean_target_logprob": -7.3985802620448835
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -7.231942607183979
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -12.06747120196436
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.375,
+          "mean_target_logprob": -2.89632697698631
+        }
+      }
+    },
+    "base_wall_s": 304.99,
+    "full_delta_wall_s": 321.05
+  },
+  "recipes": [
+    {
+      "name": "mlp_monster_kv_starved",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 16,
+        "attn.q_proj": 32,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 32,
+        "mlp.gate": 64,
+        "mlp.up": 64,
+        "mlp.down": 47
+      },
+      "rank0_layer_names": [
+        "attn.k_proj",
+        "attn.v_proj"
+      ],
+      "real_shape_bytes": 29797888,
+      "generic_shape_bytes": 29797888,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.88544512286745
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.35785286689982
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.761026205239418
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.537456296463109
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.125,
+            "mean_target_logprob": -7.3985802620448835
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.231942607183979
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.06747120196436
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.375,
+              "mean_target_logprob": -2.89632697698631
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.861211079890582
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -11.370312245305593
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -16.856387693161675
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.356933301204482
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 0.32444821052380585,
+        "instruction": 0.15888816592750474,
+        "math": 0.023625172106233647,
+        "overall": 0.15789353793428498
+      },
+      "wall_s": 313.26,
+      "eval_wall_s": 301.74,
+      "peak_rss_mb": 6939.5
+    },
+    {
+      "name": "attention_fortress",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 8,
+        "attn.q_proj": 80,
+        "attn.k_proj": 64,
+        "attn.v_proj": 64,
+        "attn.o_proj": 80,
+        "mlp.gate": 32,
+        "mlp.up": 16,
+        "mlp.down": 24
+      },
+      "rank0_layer_names": [],
+      "real_shape_bytes": 32164096,
+      "generic_shape_bytes": 32164096,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.88544512286745
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.35785286689982
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.761026205239418
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.537456296463109
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.125,
+            "mean_target_logprob": -7.3985802620448835
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.231942607183979
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.06747120196436
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.375,
+              "mean_target_logprob": -2.89632697698631
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.177318554751027
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -11.989162185748807
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -16.529503904152765
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -11.013289574351512
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 0.22342649877709803,
+        "instruction": 0.21630111597732063,
+        "math": -0.06227263772064843,
+        "overall": 0.10916314480253089
+      },
+      "wall_s": 302.27,
+      "eval_wall_s": 291.85,
+      "peak_rss_mb": 6935.3
+    },
+    {
+      "name": "embed_guardian",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 80,
+        "attn.q_proj": 16,
+        "attn.k_proj": 16,
+        "attn.v_proj": 16,
+        "attn.o_proj": 16,
+        "mlp.gate": 16,
+        "mlp.up": 16,
+        "mlp.down": 0
+      },
+      "rank0_layer_names": [
+        "mlp.down"
+      ],
+      "real_shape_bytes": 10610176,
+      "generic_shape_bytes": 10610176,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.88544512286745
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.35785286689982
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.761026205239418
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.537456296463109
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.125,
+            "mean_target_logprob": -7.3985802620448835
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.231942607183979
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.06747120196436
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.375,
+              "mean_target_logprob": -2.89632697698631
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.531659946656028
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.110244545755387
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -18.3243054700725
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.160429824140195
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 0.2036608876477902,
+        "instruction": -0.09893278707399343,
+        "math": 0.049341721172274255,
+        "overall": 0.05453869994241885
+      },
+      "wall_s": 295.09,
+      "eval_wall_s": 285.93,
+      "peak_rss_mb": 6935.3
+    },
+    {
+      "name": "no_embed_mlp_spread",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 0,
+        "attn.q_proj": 64,
+        "attn.k_proj": 32,
+        "attn.v_proj": 32,
+        "attn.o_proj": 64,
+        "mlp.gate": 80,
+        "mlp.up": 80,
+        "mlp.down": 24
+      },
+      "rank0_layer_names": [
+        "embed"
+      ],
+      "real_shape_bytes": 34690048,
+      "generic_shape_bytes": 34690048,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.88544512286745
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.35785286689982
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.761026205239418
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.537456296463109
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.125,
+            "mean_target_logprob": -7.3985802620448835
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.231942607183979
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.06747120196436
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.375,
+              "mean_target_logprob": -2.89632697698631
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -11.271381962111702
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -9.812765522678928
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -14.090311105443087
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -9.911069258213093
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 0.5787037671011093,
+        "instruction": 0.6447140842030777,
+        "math": 0.08197571485322089,
+        "overall": 0.4029778971569745
+      },
+      "wall_s": 297.9,
+      "eval_wall_s": 288.32,
+      "peak_rss_mb": 6946.8
+    },
+    {
+      "name": "o_down_heavy",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 4,
+        "attn.q_proj": 48,
+        "attn.k_proj": 8,
+        "attn.v_proj": 8,
+        "attn.o_proj": 96,
+        "mlp.gate": 20,
+        "mlp.up": 20,
+        "mlp.down": 64
+      },
+      "rank0_layer_names": [],
+      "real_shape_bytes": 33508992,
+      "generic_shape_bytes": 33508992,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.88544512286745
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.35785286689982
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.761026205239418
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.537456296463109
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.125,
+            "mean_target_logprob": -7.3985802620448835
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.231942607183979
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.06747120196436
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.375,
+              "mean_target_logprob": -2.89632697698631
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -14.218224670575717
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -13.239093473910422
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -17.34072117997249
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.07485935784424
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": 0.01938640756302999,
+        "instruction": 0.07382119344155952,
+        "math": -0.2012010263276632,
+        "overall": -0.051300521106596414
+      },
+      "wall_s": 297.97,
+      "eval_wall_s": 287.54,
+      "peak_rss_mb": 6940.3
+    }
+  ],
+  "human_baseline": {
+    "name": "uniform_rank32",
+    "kind": "human_baseline",
+    "ranks": {
+      "embed": 32,
+      "attn.q_proj": 32,
+      "attn.k_proj": 32,
+      "attn.v_proj": 32,
+      "attn.o_proj": 32,
+      "mlp.gate": 32,
+      "mlp.up": 32,
+      "mlp.down": 32
+    },
+    "rank0_layer_names": [],
+    "real_shape_bytes": 25143296,
+    "generic_shape_bytes": 25143296,
+    "configs": {
+      "base": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.0,
+          "mean_target_logprob": -13.88544512286745
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -13.35785286689982
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -17.761026205239418
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -10.537456296463109
+          }
+        }
+      },
+      "full_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.125,
+          "mean_target_logprob": -7.3985802620448835
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.231942607183979
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.06747120196436
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.375,
+            "mean_target_logprob": -2.89632697698631
+          }
+        }
+      },
+      "factored_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.0,
+          "mean_target_logprob": -13.31237449736073
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.169233255807573
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -16.754769472580207
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -11.013120763694415
+          }
+        }
+      }
+    },
+    "gap_closed": {
+      "knowledge": 0.19403150890221882,
+      "instruction": 0.1767361046095786,
+      "math": -0.06225054535052362,
+      "overall": 0.08834323479864378
+    },
+    "wall_s": 299.88,
+    "eval_wall_s": 289.09,
+    "peak_rss_mb": 6944.9
+  },
+  "ranking_by_task_score": [
+    {
+      "position": 1,
+      "name": "no_embed_mlp_spread",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -11.271381962111702,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": 0.4029778971569745,
+      "real_shape_bytes": 34690048
+    },
+    {
+      "position": 2,
+      "name": "mlp_monster_kv_starved",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -12.861211079890582,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": 0.15789353793428498,
+      "real_shape_bytes": 29797888
+    },
+    {
+      "position": 3,
+      "name": "attention_fortress",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -13.177318554751027,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": 0.10916314480253089,
+      "real_shape_bytes": 32164096
+    },
+    {
+      "position": 4,
+      "name": "uniform_rank32",
+      "kind": "human_baseline",
+      "factored_mean_target_logprob": -13.31237449736073,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": 0.08834323479864378,
+      "real_shape_bytes": 25143296
+    },
+    {
+      "position": 5,
+      "name": "embed_guardian",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -13.531659946656028,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": 0.05453869994241885,
+      "real_shape_bytes": 10610176
+    },
+    {
+      "position": 6,
+      "name": "o_down_heavy",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -14.218224670575717,
+      "factored_accuracy": 0.0,
+      "overall_gap_closed": -0.051300521106596414,
+      "real_shape_bytes": 33508992
+    }
+  ],
+  "winner": {
+    "name": "no_embed_mlp_spread",
+    "kind": "spark_recipe",
+    "note": "top recipe by Stage 2 task score; byte-fairness is judged on real_shape_bytes vs the uniform recipe and the byte-matched confirmation runs in third_pair_heldout96"
+  },
+  "api_calls": "recipe generation only (Baseten, logged in results/api_usage_log.jsonl); the rest is compute",
+  "scripts": [
+    "examples/third_pair_precompute.py",
+    "examples/third_pair_stage2.py"
+  ]
+}

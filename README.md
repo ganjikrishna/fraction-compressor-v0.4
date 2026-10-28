@@ -31,7 +31,11 @@ On the model pair used in this repo's benchmark (Qwen2.5-0.5B base and Instruct)
 
 ## Benchmark results
 
-The benchmark compares three runs on the same questions: the base model alone, the base model with the full patch, and the base model with our compressed patch. The score is how strongly the model backs the correct answer (a log score; higher is better). "Gap closed" is the share of the base-to-full score gap that a compressed patch recovers. One limit applies everywhere below: the share of questions whose first answer token is exactly right stays low for every compressed version (about 1 to 2% on the first pair, about 8 to 9% on the second), so these are score results, not proof the model solves the tasks.
+The benchmark compares three runs on the same questions: the base model alone, the base model with the full patch, and the base model with our compressed patch. The score is how strongly the model backs the correct answer (a log score; higher is better). "Gap closed" is the share of the base-to-full score gap that a compressed patch recovers. One limit applies everywhere below: the share of questions whose first answer token is exactly right stays low for every compressed version (about 1 to 2% on the first pair, about 8 to 9% on the second, 0 to about 3% on the third), so these are score results, not proof the model solves the tasks.
+
+### Known limit: skills gated by the first token transfer weakly
+
+Transfer depends on the skill, and one kind of skill is a weak case for this format. We tested a real one: NuExtract-1.5-tiny (MIT), a fine-tune of the same Qwen base that reads a text and a JSON template and answers with the template filled in. The fine-tune itself passes 9 of 10 test prompts (eight fully clean, one with a single reworded value); the plain base passes 0 of 10, because it stops immediately instead of answering. Our rank-32 patch passes only 1 of 10. The reason is narrow: this skill is decided by the first token the model emits, start the JSON or stop, and the compressed patch usually does not flip that one decision. On the one prompt where it does start, the extraction is fully correct. Making the patch bigger barely moves this boundary: a rank-64 patch (37,044,736 bytes) and a rank-128 patch (72,265,216 bytes) each pass 2 of 10. Spending the same bytes differently did worse, not better: a Muse Spark recipe that puts most of the rank-32 budget into the embedding and the attention output layer (19,434,400 bytes, the same budget) passes 0 of 10, and measured directly at the first token, its average start-vs-stop margin sits further from opening the gate than the uniform patch's. Broad behavior transfers much better under the same format: the Instruct patch below closes 23.2% of the score gap on 96 fresh questions, with wins you can see in the live hot-swap demo. So the limit is format-gated, not general. Full records: `results/skill_demo.json`, `results/skill_demo_ranks.json`, `results/skill_demo_recipe.json`, and the consultation behind this wording in `results/skill_limit_consultation.md`.
 
 ### First pair: Qwen2.5-0.5B base and Instruct
 
@@ -45,7 +49,13 @@ The same contest ran on a second, different model pair. The search winner there 
 
 One warning that applies to this pair only: every compressed version scores better than the full patch itself, so the gap-closed percentage goes above 100% here. That means the percentage is NOT a share of the fine-tune recovered for this pair. For this pair, the raw score margin (0.293 points) is the honest measure.
 
-A third pair, Meta's own Llama 3.2 1B base and Instruct, is next; that run is waiting on Meta's license approval for the model files.
+### Third pair: Llama 3.2 1B base and Instruct
+
+The same contest also ran on Meta's own open weights, Llama 3.2 1B base and Instruct. The search winner, no_embed_mlp_spread, was byte-unfair again: at 34,690,048 bytes it spends 38.0% more than the human recipe's budget of 25,143,296 bytes, so it is named only as the parent. The headline recipe is its byte-fair variant, no_embed_mlp_spread_balanced: 24,515,584 bytes, inside the budget.
+
+On the same 96 fresh questions, the byte-fair variant scores -12.714 against the human uniform recipe's -14.201: it closes 15.9% of the gap, while the human recipe closes -7.6%, which is below the base model itself (-13.718), so on this pair the plain human recipe makes the score worse than using no patch at all. The byte-fair variant also wins on each half alone: 20.0% vs -1.7% on the original 24 questions, and 14.8% vs -9.1% on the 72 new ones.
+
+Recovery on this pair is weaker than on the other two pairs (15.9% here against 23.2% on the Qwen pair), and first-token accuracy stays low for every compressed version: 2.1% for the byte-fair variant, against 21.9% for the full patch itself. No compressed version outscores the full patch on this pair, so the gap-closed percentage stays a true share of the fine-tune recovered here.
 
 ### How these numbers are checked
 
@@ -62,7 +72,7 @@ Pre-existing work (not part of this submission): Fraction Compressor v0.1 to v0.
 - `src/factored.py`: the factored runtime (quantize a delta, price its storage, apply it factored). Tested, see `tests/test_factored.py`.
 - `examples/quickstart.py`: a 1-minute smoke run on a dummy delta (needs only numpy): prints the storage cost, bits per weight, and the factored error next to the best any factored form could do at the same rank.
 - `fixtures/`: the quantum random fixture for the benchmark's audit sampling (IBM Quantum hardware, backend and job logged in the file).
-- `src/bench.py` and `results/`: the end-to-end task benchmark (base vs full delta vs compressed delta) and the Alien Sweep, where Muse Spark proposed compression recipes that were scored, cross-validated (Gemini arithmetic checks, a Muse Spark judging pass, a Muse Glimmer reference check), and confirmed on 96 fresh held-out questions generated by Muse Spark, on two model pairs. See Benchmark results above.
+- `src/bench.py` and `results/`: the end-to-end task benchmark (base vs full delta vs compressed delta) and the Alien Sweep, where Muse Spark proposed compression recipes that were scored, cross-validated (Gemini arithmetic checks, a Muse Spark judging pass, a Muse Glimmer reference check), and confirmed on 96 fresh held-out questions generated by Muse Spark, on three model pairs. See Benchmark results above.
 - The live hot-swap demo: one base model loaded once, patch files swapped in live in about a tenth of a second (examples/hotswap_demo.py, transcript in results/).
 
 ## Author and credits

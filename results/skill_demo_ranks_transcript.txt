@@ -1,0 +1,1336 @@
+FRACTION COMPRESSOR v0.4 - SKILL-TRANSFER SIZE TEST (uniform rank 64 and rank 128)
+Same 10 NuExtract prompts, same judge as results/skill_demo_transcript.txt.
+
+############################################################
+# RUN 1: uniform rank 64 patch
+############################################################
+
+FRACTION COMPRESSOR v0.4 - REAL-SKILL TRANSFER DEMO
+Skill: structured information extraction (text + JSON template -> filled JSON)
+Base: Qwen2.5-0.5B. Fine-tune: numind/NuExtract-1.5-tiny (MIT).
+Decoding: greedy, max 64 new tokens. No API calls.
+
+PATCH (built by examples/make_patch.py, uniform rank 64):
+  factored-format price: 37,044,736 B
+  patch file on disk:    37,412,490 B (.npz container)
+  full delta at fp16:    987,922,432 B (26.7x larger)
+  matrices with rank > 0: 169
+
+Base model loaded in 1.5s (RSS 2193 MB)
+
+========================================================================
+CONFIG: base (no patch)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (0 tokens, 7.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (0 tokens, 8.3s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (0 tokens, 9.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (0 tokens, 10.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (0 tokens, 9.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (0 tokens, 8.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (0 tokens, 9.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (0 tokens, 7.6s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (0 tokens, 8.6s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (0 tokens, 9.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+base (no patch): clean 0, partial 0, failed 10 of 10
+
+========================================================================
+CONFIG: base + compressed patch (uniform rank 64)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (0 tokens, 7.6s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (0 tokens, 8.8s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (0 tokens, 11.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (0 tokens, 11.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (51 tokens, 16.2s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (0 tokens, 9.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (0 tokens, 7.3s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (0 tokens, 8.3s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (0 tokens, 12.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (57 tokens, 16.5s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3 billion",
+        "Architecture": [
+            "grouped-query attention"
+        ]
+    },
+    "License": "Apache 2.0"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+base + compressed patch (uniform rank 64): clean 2, partial 0, failed 8 of 10
+
+Fine-tune weights loaded (RSS 2195 MB)
+
+========================================================================
+CONFIG: base + full delta (fine-tune weights)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (46 tokens, 11.8s):
+{
+    "Name": "Maria Chen",
+    "Age": "34",
+    "City": "Seattle",
+    "Employer": "Northwind Labs",
+    "Role": "leads the payments team"
+}
+  
+VERDICT: partial (parseable=True, keys_match=True, values 4/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (44 tokens, 12.5s):
+{
+    "Product": "AeroPress Go",
+    "Price": "$49.95",
+    "Weight": "323 grams",
+    "Maker": "AeroPress Inc."
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (64 tokens, 18.4s):
+ {
+    "Event": "The Riverbend Music Festival",
+    "Date": "August 14, 2027",
+    "City": "Austin, Texas",
+    "Performers": [
+        "The Wild Reeds",
+        "June Harbor"
+    ],
+    "Ticket price": "$
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (57 tokens, 16.3s):
+{
+    "Company": "Helix Robotics",
+    "Amount raised": "$12 million",
+    "Round": "Series A",
+    "Lead investor": "Vertex Ventures",
+    "Founded": "2021",
+    "Headquarters": "Denver"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 6/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (52 tokens, 14.8s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (45 tokens, 13.1s):
+{
+    "Winner": "Spain",
+    "Loser": "Argentina",
+    "Score": "2 to 1",
+    "Tournament": "Davis Cup",
+    "City": "Madrid"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (46 tokens, 14.2s):
+ {
+    "Ingredients": [
+        "40 grams of butter",
+        "2 cloves of garlic",
+        "200 milliliters of cream"
+    ],
+    "Simmer time": "5 minutes"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (43 tokens, 12.0s):
+ {
+    "City": "Chicago",
+    "High temperature": "57 degrees Fahrenheit",
+    "Wind speed": "18 miles per hour",
+    "Rain chance": "40 percent"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (64 tokens, 15.6s):
+{
+    "Company": "Brightline Health",
+    "Role": "data analyst",
+    "Location": "Boston",
+    "Salary range": "between $85,000 and $95,000 per year",
+    "Experience": "3 years of experience with SQL"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (58 tokens, 15.5s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3-billion",
+        "Architecture": [
+            "grouped-query attention"
+        ]
+    },
+    "License": "Apache 2.0"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+base + full delta (fine-tune weights): clean 8, partial 1, failed 1 of 10
+
+========================================================================
+SCOREBOARD (of 10 prompts)
+========================================================================
+base (no patch): clean 0, partial 0, failed 10
+base + compressed patch (uniform rank 64): clean 2, partial 0, failed 8
+base + full delta (fine-tune weights): clean 8, partial 1, failed 1
+
+Peak RSS: 2195 MB
+Wrote /home/vinay/fc-v04-skill/skill_r64.json
+
+############################################################
+# RUN 2: uniform rank 128 patch
+############################################################
+
+FRACTION COMPRESSOR v0.4 - REAL-SKILL TRANSFER DEMO
+Skill: structured information extraction (text + JSON template -> filled JSON)
+Base: Qwen2.5-0.5B. Fine-tune: numind/NuExtract-1.5-tiny (MIT).
+Decoding: greedy, max 64 new tokens. No API calls.
+
+PATCH (built by examples/make_patch.py, uniform rank 128):
+  factored-format price: 72,265,216 B
+  patch file on disk:    72,634,458 B (.npz container)
+  full delta at fp16:    987,922,432 B (13.7x larger)
+  matrices with rank > 0: 169
+
+Base model loaded in 0.9s (RSS 2374 MB)
+
+========================================================================
+CONFIG: base (no patch)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (0 tokens, 6.8s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (0 tokens, 10.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (0 tokens, 8.9s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (0 tokens, 10.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (0 tokens, 9.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (0 tokens, 8.1s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (0 tokens, 6.6s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (0 tokens, 7.4s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (0 tokens, 11.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (0 tokens, 8.9s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+base (no patch): clean 0, partial 0, failed 10 of 10
+
+========================================================================
+CONFIG: base + compressed patch (uniform rank 128)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (0 tokens, 8.4s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (0 tokens, 9.6s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (0 tokens, 10.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (0 tokens, 11.8s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (51 tokens, 19.8s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (0 tokens, 9.7s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (0 tokens, 8.0s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (0 tokens, 8.9s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (0 tokens, 10.2s):
+
+VERDICT: failed (parseable=False, keys_match=False, values 0/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (57 tokens, 20.8s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3 billion",
+        "Architecture": [
+            "grouped-query attention"
+        ]
+    },
+    "License": "Apache 2.0"
+}
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+base + compressed patch (uniform rank 128): clean 2, partial 0, failed 8 of 10
+
+Fine-tune weights loaded (RSS 2376 MB)
+
+========================================================================
+CONFIG: base + full delta (fine-tune weights)
+========================================================================
+
+[person] PROMPT:
+<|input|>
+### Template:
+{
+    "Name": "",
+    "Age": "",
+    "City": "",
+    "Employer": "",
+    "Role": ""
+}
+### Text:
+Maria Chen, a 34-year-old software engineer from Seattle, works at Northwind Labs where she leads the payments team.
+
+<|output|>
+ANSWER (46 tokens, 11.8s):
+{
+    "Name": "Maria Chen",
+    "Age": "34",
+    "City": "Seattle",
+    "Employer": "Northwind Labs",
+    "Role": "leads the payments team"
+}
+  
+VERDICT: partial (parseable=True, keys_match=True, values 4/5)
+
+[product] PROMPT:
+<|input|>
+### Template:
+{
+    "Product": "",
+    "Price": "",
+    "Weight": "",
+    "Maker": ""
+}
+### Text:
+The AeroPress Go travel coffee maker costs $49.95 and weighs 323 grams. It is made by AeroPress Inc. and brews espresso-style coffee in about 2 minutes.
+
+<|output|>
+ANSWER (44 tokens, 12.6s):
+{
+    "Product": "AeroPress Go",
+    "Price": "$49.95",
+    "Weight": "323 grams",
+    "Maker": "AeroPress Inc."
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[event] PROMPT:
+<|input|>
+### Template:
+{
+    "Event": "",
+    "Date": "",
+    "City": "",
+    "Performers": [],
+    "Ticket price": ""
+}
+### Text:
+The Riverbend Music Festival will take place on August 14, 2027, in Austin, Texas. Headliners include The Wild Reeds and June Harbor. Tickets start at $89.
+
+<|output|>
+ANSWER (64 tokens, 15.8s):
+ {
+    "Event": "The Riverbend Music Festival",
+    "Date": "August 14, 2027",
+    "City": "Austin, Texas",
+    "Performers": [
+        "The Wild Reeds",
+        "June Harbor"
+    ],
+    "Ticket price": "$
+VERDICT: failed (parseable=False, keys_match=False, values 0/6)
+
+[company] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Amount raised": "",
+    "Round": "",
+    "Lead investor": "",
+    "Founded": "",
+    "Headquarters": ""
+}
+### Text:
+On March 3, 2026, Helix Robotics announced it had raised $12 million in a Series A round led by Vertex Ventures. The startup, founded in 2021 in Denver, builds warehouse robots.
+
+<|output|>
+ANSWER (57 tokens, 19.0s):
+{
+    "Company": "Helix Robotics",
+    "Amount raised": "$12 million",
+    "Round": "Series A",
+    "Lead investor": "Vertex Ventures",
+    "Founded": "2021",
+    "Headquarters": "Denver"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 6/6)
+
+[book] PROMPT:
+<|input|>
+### Template:
+{
+    "Title": "",
+    "Author": "",
+    "Year": "",
+    "Pages": "",
+    "Publisher": ""
+}
+### Text:
+'The Clockwork Garden' is a 2023 fantasy novel by Priya Raman. The 384-page book was published by Alder House Press and won the 2024 Locus Award.
+
+<|output|>
+ANSWER (52 tokens, 14.7s):
+ {
+    "Title": "The Clockwork Garden",
+    "Author": "Priya Raman",
+    "Year": "2023",
+    "Pages": "384",
+    "Publisher": "Alder House Press"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 5/5)
+
+[sports] PROMPT:
+<|input|>
+### Template:
+{
+    "Winner": "",
+    "Loser": "",
+    "Score": "",
+    "Tournament": "",
+    "City": ""
+}
+### Text:
+In Sunday's final, Spain defeated Argentina 2 to 1 to win the Davis Cup. The deciding match lasted 3 hours and 12 minutes and was played in Madrid.
+
+<|output|>
+ANSWER (45 tokens, 12.8s):
+{
+    "Winner": "Spain",
+    "Loser": "Argentina",
+    "Score": "2 to 1",
+    "Tournament": "Davis Cup",
+    "City": "Madrid"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[recipe] PROMPT:
+<|input|>
+### Template:
+{
+    "Ingredients": [],
+    "Simmer time": ""
+}
+### Text:
+To make the sauce, melt 40 grams of butter, add 2 cloves of garlic and 200 milliliters of cream, then simmer for 5 minutes.
+
+<|output|>
+ANSWER (46 tokens, 11.4s):
+ {
+    "Ingredients": [
+        "40 grams of butter",
+        "2 cloves of garlic",
+        "200 milliliters of cream"
+    ],
+    "Simmer time": "5 minutes"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+[weather] PROMPT:
+<|input|>
+### Template:
+{
+    "City": "",
+    "High temperature": "",
+    "Wind speed": "",
+    "Rain chance": ""
+}
+### Text:
+Tomorrow in Chicago, expect a high of 57 degrees Fahrenheit with winds of 18 miles per hour from the northwest and a 40 percent chance of rain.
+
+<|output|>
+ANSWER (43 tokens, 14.8s):
+ {
+    "City": "Chicago",
+    "High temperature": "57 degrees Fahrenheit",
+    "Wind speed": "18 miles per hour",
+    "Rain chance": "40 percent"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[job] PROMPT:
+<|input|>
+### Template:
+{
+    "Company": "",
+    "Role": "",
+    "Location": "",
+    "Salary range": "",
+    "Experience": ""
+}
+### Text:
+Brightline Health is hiring a data analyst in Boston. The role pays between $85,000 and $95,000 per year and requires 3 years of experience with SQL.
+
+<|output|>
+ANSWER (64 tokens, 15.3s):
+{
+    "Company": "Brightline Health",
+    "Role": "data analyst",
+    "Location": "Boston",
+    "Salary range": "between $85,000 and $95,000 per year",
+    "Experience": "3 years of experience with SQL"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 4/4)
+
+[model] PROMPT:
+<|input|>
+### Template:
+{
+    "Model": {
+        "Name": "",
+        "Number of parameters": "",
+        "Architecture": []
+    },
+    "License": ""
+}
+### Text:
+Today we release Falcon-Lite 3B, a 3-billion-parameter language model built by the TII team in Abu Dhabi. It uses grouped-query attention and is released under the Apache 2.0 license.
+
+<|output|>
+ANSWER (58 tokens, 15.3s):
+{
+    "Model": {
+        "Name": "Falcon-Lite 3B",
+        "Number of parameters": "3-billion",
+        "Architecture": [
+            "grouped-query attention"
+        ]
+    },
+    "License": "Apache 2.0"
+}
+  
+VERDICT: clean (parseable=True, keys_match=True, values 3/3)
+
+base + full delta (fine-tune weights): clean 8, partial 1, failed 1 of 10
+
+========================================================================
+SCOREBOARD (of 10 prompts)
+========================================================================
+base (no patch): clean 0, partial 0, failed 10
+base + compressed patch (uniform rank 128): clean 2, partial 0, failed 8
+base + full delta (fine-tune weights): clean 8, partial 1, failed 1
+
+Peak RSS: 2376 MB
+Wrote /home/vinay/fc-v04-skill/skill_r128.json
