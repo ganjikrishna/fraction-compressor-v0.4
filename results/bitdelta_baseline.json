@@ -1,0 +1,99 @@
+{
+  "stage": "bitdelta_baseline_missing_baseline",
+  "date": "2026-10-28",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, qwen-test venv: python 3.14 + numpy 2.5.4 + tokenizers 0.23.3)",
+  "question": "GPT-OSS 120B, fresh-eyes review (results/fresh_perspective.md): why not a plain 1-bit delta at the same bytes, i.e. a baseline against an existing delta codec?",
+  "model_pair": {
+    "base": "~/qwen-test/data/qwen2.5-0.5b.safetensors (Qwen2.5-0.5B, BF16)",
+    "instruct": "~/qwen-test/data/qwen2.5-0.5b-instruct.safetensors (Qwen2.5-0.5B-Instruct, BF16)",
+    "matrices": "embedding + 24 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 169 delta matrices"
+  },
+  "probe_set": "the same combined 96 fresh held-out questions and the same scoring (mean target logprob, Signet convention, Stage 2 NumPy forward) as results/alien_sweep_heldout96.json",
+  "references_from_heldout96": {
+    "base_mean_target_logprob": -11.149778062515304,
+    "full_delta_mean_target_logprob": -8.542466235416498,
+    "full_delta_fp16_bytes": 987922432
+  },
+  "pricing": {
+    "n_matrices": 169,
+    "n_weights_169_matrices": 493961216,
+    "bitdelta_init_price_bytes": 61745828,
+    "bitdelta_price_formula": "ceil(total_weights / 8) + 4 bytes x n_matrices (one fp32 scale per matrix)",
+    "factored_matched_rank": 108,
+    "factored_matched_price_bytes": 61258816,
+    "factored_rank_plus_one_price_bytes": 61809136,
+    "factored_under_by_bytes": 487012
+  },
+  "configs": {
+    "bitdelta_init": {
+      "kind": "published_baseline_initialization",
+      "definition": "BitDelta initialization (Liu et al., arXiv:2402.10193): per matrix, delta_hat = sign(delta) * mean(|delta|); one fp32 scale per matrix; NO scale distillation and NO training. The full BitDelta method distills the scales on data afterwards; that step is deliberately not run, and this config must be cited as the initialization, not as BitDelta's final reported quality.",
+      "mean_target_logprob": -10.012813627503721,
+      "accuracy_first_token": 0.0625,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -8.779628382284509,
+        "instruction": -15.684763840686214,
+        "math": -5.574048659540441
+      },
+      "gap_closed": {
+        "knowledge": 0.49458874034463157,
+        "instruction": 0.2908387330879559,
+        "math": 0.48389629967959236,
+        "overall": 0.43606768595711076
+      },
+      "price_bytes": 61745828,
+      "wall_s": 285.21,
+      "peak_rss_mb": 3578.4
+    },
+    "factored_uniform_rank108": {
+      "kind": "ours_factored_matched_budget",
+      "definition": "factored.quantize_delta at uniform rank 108 on all 169 matrices: the largest uniform rank whose factored.storage_bytes total fits under the plain 1-bit price.",
+      "mean_target_logprob": -10.146044864550612,
+      "accuracy_first_token": 0.03125,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.929199680339843,
+        "instruction": -15.602130536594208,
+        "math": -6.906804376717784
+      },
+      "gap_closed": {
+        "knowledge": 0.9560398471451146,
+        "instruction": 0.3313472637077939,
+        "math": 0.14555548199040397,
+        "overall": 0.3849686054166987
+      },
+      "price_bytes": 61258816,
+      "wall_s": 287.5,
+      "peak_rss_mb": 3279.4
+    }
+  },
+  "two_budget_curve": {
+    "framing": "A plain 1-bit delta has a floor price: 1 bit per weight over the 169 matrices plus one scale per matrix. At the 19.4 MB headline budget no plain 1-bit delta fits, so the honest comparison is a curve with two budgets, not one.",
+    "budget_19mb_factored_only": {
+      "uniform_rank32": {
+        "price_bytes": 19434496,
+        "gap_closed_overall": 0.020763686533300157,
+        "source": "results/alien_sweep_heldout96.json"
+      },
+      "mlp_behemoth_lite_spark_recipe": {
+        "price_bytes": 19358176,
+        "gap_closed_overall": 0.2319228264458408,
+        "source": "results/alien_sweep_heldout96.json"
+      },
+      "plain_1bit_delta": "does not fit: floor price is 61745828 bytes"
+    },
+    "budget_at_plain_1bit_floor": {
+      "bitdelta_init": {
+        "price_bytes": 61745828,
+        "gap_closed_overall": 0.43606768595711076
+      },
+      "factored_uniform_rank108": {
+        "price_bytes": 61258816,
+        "gap_closed_overall": 0.3849686054166987
+      }
+    }
+  },
+  "scripts": [
+    "examples/bitdelta_baseline.py"
+  ],
+  "api_calls": "none for the measurements (compute only); the Spark judging pass over this file is logged in results/api_usage_log.jsonl"
+}

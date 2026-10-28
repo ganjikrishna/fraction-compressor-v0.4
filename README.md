@@ -31,6 +31,10 @@ On the model pair used in this repo's benchmark (Qwen2.5-0.5B base and Instruct)
 
 Why this matters, what bound it breaks, and where it stops working: [docs/why-it-matters.md](docs/why-it-matters.md).
 
+## Prior art
+
+Compressing a fine-tune's difference is an established research area, and this project builds on published methods, ideas only, no code: BitDelta (1-bit delta compression of fine-tuned models, NeurIPS 2024, arXiv:2402.10193), Delta-CoMe (SVD-based mixed-precision delta compression, NeurIPS 2024, arXiv:2406.08903), and LittleBit (arXiv:2506.13771). All code in this repo is original and was written during the event. What is ours is not the 1-bit format itself: it is the in-loop recipe search and judging by Muse Spark, the forced-multiply runtime, the first-token gate diagnosis with its force-start control, and the verification harness. Full credits: [NOTICE.md](NOTICE.md).
+
 ## Benchmark results
 
 The benchmark compares three runs on the same questions: the base model alone, the base model with the full patch, and the base model with our compressed patch. The score is how strongly the model backs the correct answer (a log score; higher is better). "Gap closed" is the share of the base-to-full score gap that a compressed patch recovers. One limit applies everywhere below: the share of questions whose first answer token is exactly right stays low for every compressed version (about 1 to 2% on the first pair, about 8 to 9% on the second, 0 to about 3% on the third), so these are score results, not proof the model solves the tasks.
@@ -59,6 +63,10 @@ On the same 96 fresh questions, the byte-fair variant scores -12.714 against the
 
 Recovery on this pair is weaker than on the other two pairs (15.9% here against 23.2% on the Qwen pair), and first-token accuracy stays low for every compressed version: 2.1% for the byte-fair variant, against 21.9% for the full patch itself. No compressed version outscores the full patch on this pair, so the gap-closed percentage stays a true share of the fine-tune recovered here.
 
+### Baseline: a plain 1-bit delta, priced honestly
+
+A fair question (raised by a fresh-eyes GPT-OSS review) is why not a plain 1-bit delta, the BitDelta idea: sign of each delta weight, one scale per matrix. The catch is price: a plain 1-bit delta cannot go below 1 bit per weight, which on the first pair's 169 matrices is 61,745,828 bytes. At our 19.4 MB budget it does not fit at all; the factored format is the only one of the two that exists there. At the plain format's own floor price, the comparison flips: the BitDelta initialization (sign times the per-matrix mean absolute value, exactly as published, with no scale distillation or any training) closes 43.6% of the gap on the same 96 questions, against 38.5% for our factored format at uniform rank 108 priced just under it (61,258,816 bytes). So the honest summary is a two-budget curve: below about 62 MB on this pair the factored format wins by reach, and at about 62 MB the plain initialization wins on quality. Full record: `results/bitdelta_baseline.json`, judged in `results/spark_judging_baseline.md`.
+
 ### How these numbers are checked
 
 Every number above is produced by a script in this repo and can be rerun. Beyond the reruns, Gemini independently recomputed the arithmetic, a Muse Spark judging pass checked each headline claim against the exact result files it cites, and a Muse Glimmer reference check set the wording rules used here (which recipe may be called the leader, and how the second pair's percentage may be described). A subset of the results, picked using true quantum random numbers from IBM Quantum hardware, was re-audited end to end: 41 of 41 checks passed. The records live in `results/`.
@@ -85,4 +93,4 @@ Implementation, benchmarking, and documentation were carried out with **Ember**,
 
 ## License
 
-MIT, (c) 2026 Vinay K Ganji Krishna. Methods are clean-room implementations from published papers; see the original repository's NOTICE for citations.
+MIT, (c) 2026 Vinay K Ganji Krishna. Methods are clean-room implementations from published papers; see [NOTICE.md](NOTICE.md) for citations.

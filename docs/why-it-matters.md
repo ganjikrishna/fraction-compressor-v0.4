@@ -20,6 +20,8 @@ The usual assumption is that at 1 bit per weight, nothing useful survives. Done 
 
 The other bound stands: a tiny patch is not the full fine-tune. Most of the gap stays behind. Patches are for cheap switching and sharing, not replacements.
 
+Against the simplest rival, a plain 1-bit delta (the BitDelta initialization), the honest picture is two budgets, not one: on the Qwen pair a plain 1-bit delta cannot be smaller than about 62 MB, so at our 19 MB size it does not exist, while at its own 62 MB floor it closes more of the gap than our format does at the same price (43.6% against 38.5%). Our format's win is reach: it works at sizes the plain format cannot reach. Full record: `results/bitdelta_baseline.json`.
+
 ## The known limit
 
 One kind of skill transfers weakly: skills decided by the first token, like "start the JSON or stop." On a JSON-extraction fine-tune, the full fine-tune starts on 9 of 10 prompts, the base on 0, the patch on 1. Measured at the first token, the patch moves the model halfway toward starting (base -6.33, patch -1.29, full fine-tune +4.60) but usually does not cross. On the one prompt where it does start, the extraction is fully correct.
