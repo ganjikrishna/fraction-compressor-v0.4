@@ -4,6 +4,8 @@
 
 What "fraction" means here: not math fractions. A fine-tuned AI model is a base model plus a patch (the weight difference between the two). This tool keeps only a fraction of that patch's information: the patch structure is stored as 1-bit signs, and priced all in (signs, factors, and scales together) that comes to about 0.31 bits per weight on the Qwen pair, in a file small enough to swap in and out live.
 
+One thing to be clear about: this tool does not compress a model. It compresses the difference a fine-tune makes to a model. The base model stays its full size and has to be loaded for a patch to work. What shrinks to a fraction is the fine-tune's change: from about 1 GB to about 19 MB on the Qwen2.5-0.5B pair used in these tests.
+
 ![How Fraction Compressor v0.4 works](docs/how-it-works.svg)
 
 ## In plain words
