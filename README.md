@@ -31,6 +31,8 @@ On the model pair used in this repo's benchmark (Qwen2.5-0.5B base and Instruct)
 
 Why this matters, what bound it breaks, and where it stops working: [docs/why-it-matters.md](docs/why-it-matters.md).
 
+What this is, and what it is not: [docs/intent.md](docs/intent.md).
+
 ## Prior art
 
 Compressing a fine-tune's difference is an established research area, and this project builds on published methods, ideas only, no code: BitDelta (1-bit delta compression of fine-tuned models, NeurIPS 2024, arXiv:2402.10193), Delta-CoMe (SVD-based mixed-precision delta compression, NeurIPS 2024, arXiv:2406.08903), and LittleBit (arXiv:2506.13771). Storing a skill as a compressed delta file is published too: GraftLLM packages a capability as a SkillPack (arXiv:2505.18502), and Skill Weaving's SkillZip stores each delta in factored low-bit form (arXiv:2605.22205); their skillpacks are built by training, ours are converted from an existing fine-tune after the fact. All code in this repo is original and was written during the event. What is ours is not the 1-bit format itself: it is the in-loop recipe search and judging by Muse Spark in one narrow form (the model allocates ranks for a post-hoc fine-tune delta under a hard byte budget, training-free, and the same loop judges the result against the files; an LLM choosing per-layer settings is not new by itself, as APQF, arXiv:2608.05499, has LLM planners pick per-layer bit-widths for vision models, whole-model and training-aware), the forced-multiply runtime, the first-token gate diagnosis with its force-start control, and the verification harness. Full credits: [NOTICE.md](NOTICE.md).
