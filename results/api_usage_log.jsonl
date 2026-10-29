@@ -206,3 +206,9 @@
 {"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T14:39:47Z", "purpose": "intent push review", "prompt_tokens": 922, "completion_tokens": 3000, "total_tokens": 3922, "note": "first call: reasoning consumed the cap, no content returned"}
 {"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T14:39:47Z", "purpose": "intent push review", "prompt_tokens": 922, "completion_tokens": 3773, "total_tokens": 4695}
 {"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T14:59:10Z", "purpose": "naming clarification review", "prompt_tokens": 303, "completion_tokens": 960, "total_tokens": 1263}
+{"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T15:29:34Z", "purpose": "video review v6", "prompt_tokens": 2764, "completion_tokens": 3230, "total_tokens": 5994}
+{"provider": "google-gemini", "model": "gemini-3.5-flash-lite", "time": "2026-10-29T15:30:46Z", "purpose": "video review v6", "prompt_tokens": 2927, "completion_tokens": 516, "total_tokens": 3443}
+{"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T18:26:36Z", "purpose": "lora out-of-style", "prompt_tokens": 2884, "completion_tokens": 5483, "total_tokens": 8367}
+{"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T18:27:09Z", "purpose": "lora out-of-style", "prompt_tokens": 2480, "completion_tokens": 4971, "total_tokens": 7451}
+{"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T18:27:29Z", "purpose": "lora out-of-style", "prompt_tokens": 885, "completion_tokens": 1867, "total_tokens": 2752}
+{"provider": "meta-model-api", "model": "muse-spark-1.3", "time": "2026-10-29T19:25:30Z", "purpose": "recovery tuning", "prompt_tokens": 1173, "completion_tokens": 4087, "total_tokens": 5260}

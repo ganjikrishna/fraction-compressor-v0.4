@@ -1,0 +1,678 @@
+{
+  "stage": "lora_baseline_matched_byte_distillation",
+  "date": "2026-10-28",
+  "design": "results/lora_baseline_design.md (frozen before training; pressure-tested by Gemini + Muse Spark, calls logged)",
+  "question": "at the factored patches' byte budget on the Qwen2.5-0.5B pair, how much of the base-to-full gap does a LoRA adapter distilled from the full fine-tune close on the same combined 96?",
+  "model_pair": {
+    "base": "~/qwen-test/data/qwen2.5-0.5b.safetensors (Qwen2.5-0.5B, BF16)",
+    "instruct": "~/qwen-test/data/qwen2.5-0.5b-instruct.safetensors (Qwen2.5-0.5B-Instruct, BF16)",
+    "matrices": "embedding + 24 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 169 delta matrices"
+  },
+  "probe_set": "combined 96 held-out Spark probes, identical file and scoring to results/alien_sweep_heldout96.json",
+  "adapter": {
+    "form": "LoRA delta_W = B@A, rank 17, all seven block linears x 24 blocks, no embedding adapter, alpha 32 folded into B at export",
+    "training": "soft KL (forward KL teacher||student, T=1) at teacher-answer positions, teacher = full Instruct weights run online; 1,350 train prompts (450/bucket), 150 val prompts for early stopping only; AdamW lr 2e-4 cosine, batch 8, up to 6 epochs",
+    "distillation_prompts": "1,500 fresh Muse Spark prompts (500/bucket), novelty-checked vs the 96 eval prompts and the 24 Signet prompts (exact match / Jaccard >= 0.7 rejected), teacher answers are the teacher's own greedy generations; eval prompts/answers never used",
+    "price": {
+      "bytes_fp16": 18696192,
+      "params": 9348096,
+      "rank": 17,
+      "uniform_budget_bytes": 19434496,
+      "lite_budget_bytes": 19358176,
+      "under_uniform_by": 738304
+    }
+  },
+  "verification": {
+    "zero_adapter_vs_stored_base_max_abs_per_item_diff": 0.0,
+    "dense_vs_hooked_seed1_max_abs_per_item_diff": 7.07604862526523e-06,
+    "torch_port_vs_numpy_base": {
+      "n_items": 12,
+      "max_abs_logprob_diff_vs_numpy_base": 8.626008422929488e-05,
+      "mean_abs_logprob_diff_vs_numpy_base": 2.394229426531484e-05,
+      "wall_s": 13.5
+    },
+    "kv_cache_check": {
+      "n_prompts": 20,
+      "sequence_mismatches": 0
+    }
+  },
+  "script_rerun_of_stored_rows": {
+    "uniform_rank32": {
+      "recomputed_mean_target_logprob": -11.095640657042859,
+      "published_mean_target_logprob": -11.095640657042859,
+      "abs_diff": 0.0,
+      "recomputed_gap_closed": 0.020763686533300157,
+      "published_gap_closed": 0.020763686533300157
+    },
+    "mlp_behemoth_lite": {
+      "recomputed_mean_target_logprob": -10.54508293414888,
+      "published_mean_target_logprob": -10.54508293414888,
+      "abs_diff": 0.0,
+      "recomputed_gap_closed": 0.2319228264458408,
+      "published_gap_closed": 0.2319228264458408
+    },
+    "base": {
+      "recomputed_mean_target_logprob": -11.149778062515304,
+      "published_mean_target_logprob": -11.149778062515304,
+      "abs_diff": 0.0
+    },
+    "full_delta": {
+      "recomputed_mean_target_logprob": -8.542466235416498,
+      "published_mean_target_logprob": -8.542466235416498,
+      "abs_diff": 0.0
+    }
+  },
+  "table": [
+    {
+      "name": "base",
+      "kind": "reference",
+      "bytes": 0,
+      "mean_target_logprob": -11.149778062515304,
+      "accuracy": 0.03125,
+      "gap_closed": {
+        "knowledge": 0.0,
+        "instruction": 0.0,
+        "math": 0.0,
+        "overall": 0.0
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.691127898157578,
+        "instruction": -16.278045431137716,
+        "math": -7.480160858250617
+      },
+      "wall_s": 273.59,
+      "peak_rss_mb": 3223.8
+    },
+    {
+      "name": "full_delta",
+      "kind": "reference",
+      "bytes": 987922432,
+      "mean_target_logprob": -8.542466235416498,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.0,
+        "instruction": 1.0,
+        "math": 1.0,
+        "overall": 1.0
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.848183565785732,
+        "instruction": -14.238146604209183,
+        "math": -3.54106853625458
+      },
+      "wall_s": 288.02,
+      "peak_rss_mb": 3223.9
+    },
+    {
+      "name": "uniform_rank32",
+      "kind": "factored_patch",
+      "bytes": 19434496,
+      "mean_target_logprob": -11.095640657042859,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.07824083717894015,
+        "instruction": 0.1663986170274122,
+        "math": -0.08154610464565101,
+        "overall": 0.020763686533300157
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.546934390718622,
+        "instruction": -15.938609087460968,
+        "math": -7.801378492948986
+      },
+      "wall_s": 284.96,
+      "peak_rss_mb": 3235.5
+    },
+    {
+      "name": "mlp_behemoth_lite",
+      "kind": "factored_patch_headline",
+      "bytes": 19358176,
+      "mean_target_logprob": -10.54508293414888,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.0366292809886672,
+        "instruction": 0.3496144237861203,
+        "math": 0.26234510944899664,
+        "overall": 0.2319228264458408
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.623622172360658,
+        "instruction": -15.564867378179114,
+        "math": -6.446759251906864
+      },
+      "wall_s": 284.82,
+      "peak_rss_mb": 3227.2
+    },
+    {
+      "name": "lora_distilled_seed20261028",
+      "kind": "lora_adapter_distilled",
+      "bytes": 18696192,
+      "mean_target_logprob": -7.512636939401433,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.7992057332133136,
+        "instruction": 1.3509266840787184,
+        "math": 1.2286672174198003,
+        "overall": 1.3949774190074422
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.375291889361169,
+        "instruction": -13.522291673019085,
+        "math": -2.640327255824046
+      },
+      "wall_s": 283.43,
+      "peak_rss_mb": 3227.5
+    },
+    {
+      "name": "lora_distilled_seed20261029",
+      "kind": "lora_adapter_distilled",
+      "bytes": 18696192,
+      "mean_target_logprob": -7.5692209807673905,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.8112664037010235,
+        "instruction": 1.2512362127446002,
+        "math": 1.2315560065576119,
+        "overall": 1.3732753576054044
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.35306474504124,
+        "instruction": -13.725650148549505,
+        "math": -2.6289480487114267
+      },
+      "wall_s": 283.02,
+      "peak_rss_mb": 3228.0
+    },
+    {
+      "name": "lora_distilled_seed20261030",
+      "kind": "lora_adapter_distilled",
+      "bytes": 18696192,
+      "mean_target_logprob": -7.714326032835724,
+      "accuracy": 0.17708333333333334,
+      "gap_closed": {
+        "knowledge": 1.6646431175773289,
+        "instruction": 1.2065339183321138,
+        "math": 1.2127931957182088,
+        "overall": 1.3176222322062097
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.623283299196639,
+        "instruction": -13.81683830648255,
+        "math": -2.702856492827984
+      },
+      "wall_s": 281.28,
+      "peak_rss_mb": 3227.8
+    },
+    {
+      "name": "uniform_rank32_noembed",
+      "kind": "factored_blocks_only",
+      "bytes": 18161664,
+      "mean_target_logprob": -10.84657747501817,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.9192286416766424,
+        "instruction": 0.27372832346474596,
+        "math": -0.3409068457915259,
+        "overall": 0.11628857904369254
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.997040682825739,
+        "instruction": -15.719667345204867,
+        "math": -8.823024397023904
+      },
+      "wall_s": 283.99,
+      "peak_rss_mb": 3225.6,
+      "note": "embedding delta dropped; priced blocks-only"
+    },
+    {
+      "name": "mlp_behemoth_lite_noembed",
+      "kind": "factored_blocks_only",
+      "bytes": 18542592,
+      "mean_target_logprob": -10.701146531463614,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.9736881740862442,
+        "instruction": 0.325939605370518,
+        "math": -0.2826646944023207,
+        "overall": 0.17206669581631484
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.896674796227843,
+        "instruction": -15.613161612492847,
+        "math": -8.593603185670155
+      },
+      "wall_s": 290.26,
+      "peak_rss_mb": 3226.2,
+      "note": "embedding delta dropped; priced blocks-only"
+    },
+    {
+      "name": "lora_seed20261028_fp32",
+      "kind": "sensitivity",
+      "bytes": 18696192,
+      "mean_target_logprob": -7.512639623569911,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.7992398514425971,
+        "instruction": 1.3508841206462603,
+        "math": 1.2286712525100998,
+        "overall": 1.394976389530089
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.3752290113638805,
+        "instruction": -13.522378498115026,
+        "math": -2.640311361230829
+      },
+      "wall_s": 285.38,
+      "peak_rss_mb": 3228.0,
+      "note": "same adapter scored from fp32-unrounded A/B"
+    },
+    {
+      "name": "uniform_rank32_vfp16",
+      "kind": "sensitivity",
+      "bytes": 19434496,
+      "mean_target_logprob": -11.095535125003964,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.07825227194015118,
+        "instruction": 0.166362268852362,
+        "math": -0.08145225838419182,
+        "overall": 0.02080416195238792
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.546913317090256,
+        "instruction": -15.938683234060614,
+        "math": -7.801008823861024
+      },
+      "wall_s": 283.08,
+      "peak_rss_mb": 3237.1,
+      "note": "factored row re-scored with V rounded through fp16"
+    },
+    {
+      "name": "mlp_behemoth_lite_vfp16",
+      "kind": "sensitivity",
+      "bytes": 19358176,
+      "mean_target_logprob": -10.545108765829486,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.036639431385576314,
+        "instruction": 0.3496534298318522,
+        "math": 0.2623004874826047,
+        "overall": 0.23191291904606698
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.623603465744203,
+        "instruction": -15.564787809792183,
+        "math": -6.446935021952071
+      },
+      "wall_s": 284.98,
+      "peak_rss_mb": 3228.9,
+      "note": "factored row re-scored with V rounded through fp16"
+    }
+  ],
+  "adapter_summary": {
+    "bytes": 18696192,
+    "params": 9348096,
+    "rank": 17,
+    "placement": "all seven block linears x 24 blocks, no embedding",
+    "mean_target_logprob_mean_over_seeds": -7.598727984334849,
+    "mean_target_logprob_std_over_seeds": 0.0849416272006217,
+    "gap_closed_mean_over_seeds": 1.3619583362730188,
+    "gap_closed_std_over_seeds": 0.032578238750651224,
+    "per_seed": [
+      {
+        "name": "lora_distilled_seed20261028",
+        "kind": "lora_adapter_distilled",
+        "bytes": 18696192,
+        "mean_target_logprob": -7.512636939401433,
+        "accuracy": 0.16666666666666666,
+        "gap_closed": {
+          "knowledge": 1.7992057332133136,
+          "instruction": 1.3509266840787184,
+          "math": 1.2286672174198003,
+          "overall": 1.3949774190074422
+        },
+        "per_bucket_mean_target_logprob": {
+          "knowledge": -6.375291889361169,
+          "instruction": -13.522291673019085,
+          "math": -2.640327255824046
+        },
+        "wall_s": 283.43,
+        "peak_rss_mb": 3227.5
+      },
+      {
+        "name": "lora_distilled_seed20261029",
+        "kind": "lora_adapter_distilled",
+        "bytes": 18696192,
+        "mean_target_logprob": -7.5692209807673905,
+        "accuracy": 0.16666666666666666,
+        "gap_closed": {
+          "knowledge": 1.8112664037010235,
+          "instruction": 1.2512362127446002,
+          "math": 1.2315560065576119,
+          "overall": 1.3732753576054044
+        },
+        "per_bucket_mean_target_logprob": {
+          "knowledge": -6.35306474504124,
+          "instruction": -13.725650148549505,
+          "math": -2.6289480487114267
+        },
+        "wall_s": 283.02,
+        "peak_rss_mb": 3228.0
+      },
+      {
+        "name": "lora_distilled_seed20261030",
+        "kind": "lora_adapter_distilled",
+        "bytes": 18696192,
+        "mean_target_logprob": -7.714326032835724,
+        "accuracy": 0.17708333333333334,
+        "gap_closed": {
+          "knowledge": 1.6646431175773289,
+          "instruction": 1.2065339183321138,
+          "math": 1.2127931957182088,
+          "overall": 1.3176222322062097
+        },
+        "per_bucket_mean_target_logprob": {
+          "knowledge": -6.623283299196639,
+          "instruction": -13.81683830648255,
+          "math": -2.702856492827984
+        },
+        "wall_s": 281.28,
+        "peak_rss_mb": 3227.8
+      }
+    ]
+  },
+  "generation_record_summary": {
+    "batches": 22,
+    "total_prompts": 1500
+  },
+  "prep": {
+    "stage": "lora_baseline_prep",
+    "threads": 10,
+    "forward_validation": {
+      "n_items": 12,
+      "max_abs_logprob_diff_vs_numpy_base": 8.626008422929488e-05,
+      "mean_abs_logprob_diff_vs_numpy_base": 2.394229426531484e-05,
+      "wall_s": 13.5
+    },
+    "adapter_price": {
+      "bytes_fp16": 18696192,
+      "params": 9348096,
+      "rank": 17,
+      "uniform_budget_bytes": 19434496,
+      "lite_budget_bytes": 19358176,
+      "under_uniform_by": 738304
+    },
+    "kv_cache_check": {
+      "n_prompts": 20,
+      "sequence_mismatches": 0
+    },
+    "teacher_generation": {
+      "generator": "batched torch port (lora_gen_batch.py), validated vs single-stream",
+      "n": 1500,
+      "answer_tokens_mean": 28.194,
+      "answer_tokens_min": 2,
+      "answer_tokens_max": 48,
+      "ended_with_im_end": 753,
+      "wall_s": 2033.7
+    },
+    "generation_note": "Teacher answers were produced by the batched torch decoder (lora_gen_batch.py) after the single-stream prep run proved too slow under shared-machine contention (6.3 s/prompt at 250/1500). The batched decoder was validated against the single-stream KV decoder (0/6 sequence mismatches, 16-token cap, same weights) before the swap; the underlying forward was separately validated against the NumPy scorer (above) and the KV decoder against full-forward greedy (0/20)."
+  },
+  "training_logs": {
+    "20261028": {
+      "seed": 20261028,
+      "lr": 0.0002,
+      "batch": 8,
+      "epochs_max": 6,
+      "alpha": 32.0,
+      "rank": 17,
+      "scale": 1.8823529411764706,
+      "checks": [
+        {
+          "step": 100,
+          "epoch": 0,
+          "val_kl": 1.3472821307283178,
+          "wall_s": 994.7
+        },
+        {
+          "step": 200,
+          "epoch": 1,
+          "val_kl": 1.0713086634084303,
+          "wall_s": 2094.0
+        },
+        {
+          "step": 300,
+          "epoch": 1,
+          "val_kl": 1.0556112544689922,
+          "wall_s": 3170.3
+        },
+        {
+          "step": 400,
+          "epoch": 2,
+          "val_kl": 0.9782512879491052,
+          "wall_s": 4121.7
+        },
+        {
+          "step": 500,
+          "epoch": 2,
+          "val_kl": 0.9755596488677186,
+          "wall_s": 5042.7
+        },
+        {
+          "step": 600,
+          "epoch": 3,
+          "val_kl": 0.9536302159847755,
+          "wall_s": 5933.7
+        },
+        {
+          "step": 700,
+          "epoch": 4,
+          "val_kl": 0.9338510408238097,
+          "wall_s": 6810.6
+        },
+        {
+          "step": 800,
+          "epoch": 4,
+          "val_kl": 0.9182936006036596,
+          "wall_s": 7707.7
+        },
+        {
+          "step": 900,
+          "epoch": 5,
+          "val_kl": 0.9159513716253735,
+          "wall_s": 8600.4
+        },
+        {
+          "step": 1000,
+          "epoch": 5,
+          "val_kl": 0.9147066904875825,
+          "wall_s": 9487.3
+        },
+        {
+          "step": 1014,
+          "epoch": 5,
+          "val_kl": 0.9147046971203975,
+          "wall_s": 9683.0
+        }
+      ],
+      "best_val_kl": 0.9147066904875825,
+      "steps_run": 1014,
+      "wall_s": 9683.0,
+      "peak_rss_mb": 5432.0
+    },
+    "20261029": {
+      "seed": 20261029,
+      "lr": 0.0002,
+      "batch": 8,
+      "epochs_max": 6,
+      "alpha": 32.0,
+      "rank": 17,
+      "scale": 1.8823529411764706,
+      "checks": [
+        {
+          "step": 100,
+          "epoch": 0,
+          "val_kl": 1.0809530089290869,
+          "wall_s": 1015.6
+        },
+        {
+          "step": 200,
+          "epoch": 1,
+          "val_kl": 0.9775640920976536,
+          "wall_s": 1963.7
+        },
+        {
+          "step": 300,
+          "epoch": 1,
+          "val_kl": 0.9722592072587747,
+          "wall_s": 2905.5
+        },
+        {
+          "step": 400,
+          "epoch": 2,
+          "val_kl": 0.940375681765595,
+          "wall_s": 3831.9
+        },
+        {
+          "step": 500,
+          "epoch": 2,
+          "val_kl": 0.9173482437434795,
+          "wall_s": 4774.5
+        },
+        {
+          "step": 600,
+          "epoch": 3,
+          "val_kl": 0.9213694685455032,
+          "wall_s": 5707.0
+        },
+        {
+          "step": 700,
+          "epoch": 4,
+          "val_kl": 0.905924436775652,
+          "wall_s": 6648.2
+        },
+        {
+          "step": 800,
+          "epoch": 4,
+          "val_kl": 0.9008511893877141,
+          "wall_s": 7583.6
+        },
+        {
+          "step": 900,
+          "epoch": 5,
+          "val_kl": 0.8981861657820531,
+          "wall_s": 8519.0
+        },
+        {
+          "step": 1000,
+          "epoch": 5,
+          "val_kl": 0.8973795699464785,
+          "wall_s": 9455.2
+        },
+        {
+          "step": 1014,
+          "epoch": 5,
+          "val_kl": 0.8973786847812387,
+          "wall_s": 9666.3
+        }
+      ],
+      "best_val_kl": 0.8973795699464785,
+      "steps_run": 1014,
+      "wall_s": 9666.3,
+      "peak_rss_mb": 5538.4
+    },
+    "20261030": {
+      "seed": 20261030,
+      "lr": 0.0002,
+      "batch": 8,
+      "epochs_max": 6,
+      "alpha": 32.0,
+      "rank": 17,
+      "scale": 1.8823529411764706,
+      "checks": [
+        {
+          "step": 100,
+          "epoch": 0,
+          "val_kl": 1.078494153590804,
+          "wall_s": 901.7
+        },
+        {
+          "step": 200,
+          "epoch": 1,
+          "val_kl": 0.9795098210443539,
+          "wall_s": 1796.1
+        },
+        {
+          "step": 300,
+          "epoch": 1,
+          "val_kl": 1.0008001974570626,
+          "wall_s": 2694.6
+        },
+        {
+          "step": 400,
+          "epoch": 2,
+          "val_kl": 0.9550857093421596,
+          "wall_s": 3599.2
+        },
+        {
+          "step": 500,
+          "epoch": 2,
+          "val_kl": 0.933706299730032,
+          "wall_s": 4500.0
+        },
+        {
+          "step": 600,
+          "epoch": 3,
+          "val_kl": 0.9233526661859031,
+          "wall_s": 5400.1
+        },
+        {
+          "step": 700,
+          "epoch": 4,
+          "val_kl": 0.9198065467907373,
+          "wall_s": 6302.8
+        },
+        {
+          "step": 800,
+          "epoch": 4,
+          "val_kl": 0.9140510174956247,
+          "wall_s": 7197.5
+        },
+        {
+          "step": 900,
+          "epoch": 5,
+          "val_kl": 0.909664604436267,
+          "wall_s": 8098.2
+        },
+        {
+          "step": 1000,
+          "epoch": 5,
+          "val_kl": 0.9077361160092929,
+          "wall_s": 9007.6
+        },
+        {
+          "step": 1014,
+          "epoch": 5,
+          "val_kl": 0.9077350008106346,
+          "wall_s": 9210.3
+        }
+      ],
+      "best_val_kl": 0.9077361160092929,
+      "steps_run": 1014,
+      "wall_s": 9210.3,
+      "peak_rss_mb": 5617.8
+    }
+  },
+  "headline_comparison": {
+    "adapter_gap_closed_mean": 1.3619583362730188,
+    "adapter_gap_closed_std": 0.032578238750651224,
+    "uniform_gap_closed": 0.020763686533300157,
+    "lite_gap_closed": 0.2319228264458408,
+    "adapter_beats_uniform": true,
+    "adapter_beats_lite": true
+  },
+  "scripts": [
+    "examples/lora_baseline_gen.py",
+    "examples/lora_baseline.py",
+    "examples/lora_baseline_assemble.py"
+  ]
+}

@@ -1,0 +1,469 @@
+{
+  "stage": "recovery_tuning_pilot",
+  "date": "2026-10-29",
+  "pilot": "one seed (20261028); no training-cost claim is drawn from this pilot alone (panel amendment, results/lora_result_discussion.md)",
+  "design": "results/recovery_tuning_design.md (frozen before training, panel amendment included)",
+  "question": "does a 101-step training pass initialized from the shipped lite factored patch beat the same 101-step pass from a random/zero start, after both are re-quantized into the same 1-bit factored format at the same byte count?",
+  "model_pair": "Qwen2.5-0.5B base / Qwen2.5-0.5B-Instruct",
+  "probe_set": "combined 96 held-out Spark probes, identical file and scoring to results/alien_sweep_heldout96.json",
+  "reference_gap": {
+    "base_mean_logprob": -11.149778062515304,
+    "full_mean_logprob": -8.542466235416498,
+    "gap_nats": 2.6073118270988065
+  },
+  "training": {
+    "lite_rt": {
+      "init": "patch",
+      "steps": 101,
+      "lr": 2e-05,
+      "batch": 8,
+      "seed": 20261028,
+      "wall_s": 1260.2,
+      "peak_rss_mb": 5783.8,
+      "val_kl_checks": [
+        {
+          "step": 0,
+          "val_kl": 1.0788715350053024,
+          "wall_s": 90.2
+        },
+        {
+          "step": 101,
+          "val_kl": 0.212174490652719,
+          "wall_s": 1239.9
+        }
+      ],
+      "val_kl_curve_subset30": [
+        {
+          "step": 0,
+          "val_kl_subset30": 0.5117141916094093,
+          "wall_s": 110.4
+        },
+        {
+          "step": 10,
+          "val_kl_subset30": 0.4656943777418501,
+          "wall_s": 215.6
+        },
+        {
+          "step": 20,
+          "val_kl_subset30": 0.3294358654145458,
+          "wall_s": 317.0
+        },
+        {
+          "step": 30,
+          "val_kl_subset30": 0.2649532586549126,
+          "wall_s": 419.8
+        },
+        {
+          "step": 40,
+          "val_kl_subset30": 0.22073959979274288,
+          "wall_s": 520.5
+        },
+        {
+          "step": 50,
+          "val_kl_subset30": 0.20665651608501723,
+          "wall_s": 625.0
+        },
+        {
+          "step": 60,
+          "val_kl_subset30": 0.19391658844838686,
+          "wall_s": 727.1
+        },
+        {
+          "step": 70,
+          "val_kl_subset30": 0.18297443461995938,
+          "wall_s": 826.2
+        },
+        {
+          "step": 80,
+          "val_kl_subset30": 0.1789380658673335,
+          "wall_s": 932.2
+        },
+        {
+          "step": 90,
+          "val_kl_subset30": 0.1771807698995038,
+          "wall_s": 1035.9
+        },
+        {
+          "step": 100,
+          "val_kl_subset30": 0.17693557190707937,
+          "wall_s": 1140.6
+        },
+        {
+          "step": 101,
+          "val_kl_subset30": 0.17693553135070603,
+          "wall_s": 1260.2
+        }
+      ],
+      "forward_validation": {
+        "reference": "eval_mlp_behemoth_lite.json",
+        "n_items": 12,
+        "max_abs_logprob_diff_vs_numpy": 3.352874652762239e-05,
+        "mean_abs_logprob_diff_vs_numpy": 1.448290549451355e-05
+      }
+    },
+    "ctrl_rt": {
+      "init": "control",
+      "steps": 101,
+      "lr": 2e-05,
+      "batch": 8,
+      "seed": 20261028,
+      "wall_s": 1254.1,
+      "peak_rss_mb": 5769.7,
+      "val_kl_checks": [
+        {
+          "step": 0,
+          "val_kl": 2.559996650538366,
+          "wall_s": 90.2
+        },
+        {
+          "step": 101,
+          "val_kl": 1.2050919440505956,
+          "wall_s": 1234.0
+        }
+      ],
+      "val_kl_curve_subset30": [
+        {
+          "step": 0,
+          "val_kl_subset30": 0.679829580913045,
+          "wall_s": 110.2
+        },
+        {
+          "step": 10,
+          "val_kl_subset30": 0.7177951218356495,
+          "wall_s": 214.7
+        },
+        {
+          "step": 20,
+          "val_kl_subset30": 0.6032088448794831,
+          "wall_s": 316.0
+        },
+        {
+          "step": 30,
+          "val_kl_subset30": 0.5226007823823274,
+          "wall_s": 417.7
+        },
+        {
+          "step": 40,
+          "val_kl_subset30": 0.4270868276943623,
+          "wall_s": 516.6
+        },
+        {
+          "step": 50,
+          "val_kl_subset30": 0.3737417346675339,
+          "wall_s": 619.8
+        },
+        {
+          "step": 60,
+          "val_kl_subset30": 0.3627017939460521,
+          "wall_s": 721.6
+        },
+        {
+          "step": 70,
+          "val_kl_subset30": 0.35779064411412004,
+          "wall_s": 823.2
+        },
+        {
+          "step": 80,
+          "val_kl_subset30": 0.3536107708051907,
+          "wall_s": 927.9
+        },
+        {
+          "step": 90,
+          "val_kl_subset30": 0.3509772486994388,
+          "wall_s": 1031.3
+        },
+        {
+          "step": 100,
+          "val_kl_subset30": 0.35053878554641005,
+          "wall_s": 1136.0
+        },
+        {
+          "step": 101,
+          "val_kl_subset30": 0.35053874197982765,
+          "wall_s": 1254.1
+        }
+      ],
+      "forward_validation": {
+        "reference": "eval_base.json",
+        "n_items": 12,
+        "max_abs_logprob_diff_vs_numpy": 8.626008422929488e-05,
+        "mean_abs_logprob_diff_vs_numpy": 2.394229426531484e-05
+      }
+    }
+  },
+  "requant": {
+    "lite_rt": {
+      "bytes_requantized": 19358176,
+      "bytes_match": true,
+      "fp16_diagnostic_bytes": 43422720,
+      "rel_frobenius_err_mean": 0.5422209733270684,
+      "rel_frobenius_err_max": 0.5898950104147441,
+      "wall_s": 82.6
+    },
+    "ctrl_rt": {
+      "bytes_requantized": 19358176,
+      "bytes_match": true,
+      "fp16_diagnostic_bytes": 43422720,
+      "rel_frobenius_err_mean": 0.5609985227073907,
+      "rel_frobenius_err_max": 0.5880688561316819,
+      "wall_s": 82.7
+    }
+  },
+  "rows": {
+    "base": {
+      "n": 96,
+      "mean_target_logprob": -11.149778062515304,
+      "gap_closed": 0.0,
+      "first_token_accuracy": 0.03125,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -9.691127898157578,
+          "accuracy": 0.0625
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -16.278045431137716,
+          "accuracy": 0.0
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -7.480160858250617,
+          "accuracy": 0.03125
+        }
+      }
+    },
+    "full_fine_tune": {
+      "n": 96,
+      "mean_target_logprob": -8.542466235416498,
+      "gap_closed": 1.0,
+      "first_token_accuracy": 0.16666666666666666,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -7.848183565785732,
+          "accuracy": 0.03125
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -14.238146604209183,
+          "accuracy": 0.125
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -3.54106853625458,
+          "accuracy": 0.34375
+        }
+      }
+    },
+    "uniform_rank32": {
+      "n": 96,
+      "mean_target_logprob": -11.095640657042859,
+      "gap_closed": 0.020763686533300157,
+      "first_token_accuracy": 0.010416666666666666,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -9.546934390718622,
+          "accuracy": 0.03125
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -15.938609087460968,
+          "accuracy": 0.0
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -7.801378492948986,
+          "accuracy": 0.0
+        }
+      }
+    },
+    "lite_untouched": {
+      "n": 96,
+      "mean_target_logprob": -10.54508293414888,
+      "gap_closed": 0.2319228264458408,
+      "first_token_accuracy": 0.010416666666666666,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -9.623622172360658,
+          "accuracy": 0.03125
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -15.564867378179114,
+          "accuracy": 0.0
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -6.446759251906864,
+          "accuracy": 0.0
+        }
+      }
+    },
+    "lite_recovery_tuned_requantized": {
+      "n": 96,
+      "mean_target_logprob": -8.18885623367786,
+      "gap_closed": 1.1356224437995606,
+      "first_token_accuracy": 0.11458333333333333,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -6.7159344766856615,
+          "accuracy": 0.0625
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -13.74340238774192,
+          "accuracy": 0.0625
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -4.107231836606001,
+          "accuracy": 0.21875
+        }
+      },
+      "first_token_vs_continuation": {
+        "first_token_mean_logprob": -6.150312033233901,
+        "continuation_mean_logprob_per_token": -1.2080261928556797,
+        "n_continuation_tokens": 162
+      }
+    },
+    "lite_recovery_tuned_fp16_diagnostic": {
+      "n": 96,
+      "mean_target_logprob": -6.793331765621279,
+      "gap_closed": 1.670857413990833,
+      "first_token_accuracy": 0.19791666666666666,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -4.626759495634707,
+          "accuracy": 0.03125
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -12.931337278905191,
+          "accuracy": 0.15625
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -2.821898522323937,
+          "accuracy": 0.40625
+        }
+      },
+      "first_token_vs_continuation": {
+        "first_token_mean_logprob": -4.932793816766715,
+        "continuation_mean_logprob_per_token": -1.1025410067286303,
+        "n_continuation_tokens": 162
+      }
+    },
+    "control_recovery_tuned_requantized": {
+      "n": 96,
+      "mean_target_logprob": -7.634353652694391,
+      "gap_closed": 1.3482945819075953,
+      "first_token_accuracy": 0.17708333333333334,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -5.764824367115066,
+          "accuracy": 0.09375
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -13.54975801416682,
+          "accuracy": 0.15625
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -3.588478576801289,
+          "accuracy": 0.28125
+        }
+      },
+      "first_token_vs_continuation": {
+        "first_token_mean_logprob": -5.191730261147248,
+        "continuation_mean_logprob_per_token": -1.4474805283242334,
+        "n_continuation_tokens": 162
+      }
+    },
+    "control_recovery_tuned_fp16_diagnostic": {
+      "n": 96,
+      "mean_target_logprob": -6.848188975580444,
+      "gap_closed": 1.649817655957669,
+      "first_token_accuracy": 0.2708333333333333,
+      "per_bucket": {
+        "knowledge": {
+          "n": 32,
+          "mean_target_logprob": -4.418933406276559,
+          "accuracy": 0.09375
+        },
+        "instruction": {
+          "n": 32,
+          "mean_target_logprob": -13.63927860512112,
+          "accuracy": 0.1875
+        },
+        "math": {
+          "n": 32,
+          "mean_target_logprob": -2.4863549153436537,
+          "accuracy": 0.53125
+        }
+      },
+      "first_token_vs_continuation": {
+        "first_token_mean_logprob": -4.432406957407752,
+        "continuation_mean_logprob_per_token": -1.4315745292875215,
+        "n_continuation_tokens": 162
+      }
+    }
+  },
+  "lora_context": {
+    "adapter_mean_gap_closed": 1.3619583362730188,
+    "adapter_mean_logprob": -7.598727984334849,
+    "adapter_bytes": 18696192,
+    "note": "context only, not like-for-like: the adapter used a different parameterization, 1,014 steps per seed, and an 18.7 MB fp16 price against the tuned factors' 43.4 MB fp16 diagnostic price"
+  },
+  "headline": {
+    "comparison": "patch-init re-quantized vs control-init re-quantized, identical bytes (19,358,176 B)",
+    "lite_untouched_gap_closed": 0.2319228264458408,
+    "patch_init_requantized_gap_closed": 1.1356224437995606,
+    "control_init_requantized_gap_closed": 1.3482945819075953,
+    "patch_init_advantage_over_control": -0.21267213810803476,
+    "patch_init_gain_over_lite": 0.9036996173537197,
+    "control_init_gain_over_lite": 1.1163717554617545,
+    "patch_init_fp16_diagnostic_gap_closed": 1.670857413990833,
+    "control_init_fp16_diagnostic_gap_closed": 1.649817655957669,
+    "share_of_patch_fp16_gain_surviving_requantization": 0.6280338419660534
+  },
+  "checks": {
+    "eval_machinery_lite_rescore": {
+      "max_abs_per_item_logprob_diff": 0.0,
+      "first_token_flags_identical": true,
+      "pass": true
+    },
+    "byte_count_lite_rt": {
+      "stored_matrices_priced_from_shapes": 19345888,
+      "n_stored_matrices": 145,
+      "rank0_bytes_from_table": 12288,
+      "pricing_table_sum": 19358176,
+      "table_shapes_match_header": true,
+      "table_ranks_match_npz": true,
+      "table_stored_flags_match_npz": true,
+      "target": 19358176,
+      "pass": true
+    },
+    "byte_count_ctrl_rt": {
+      "stored_matrices_priced_from_shapes": 19345888,
+      "n_stored_matrices": 145,
+      "rank0_bytes_from_table": 12288,
+      "pricing_table_sum": 19358176,
+      "table_shapes_match_header": true,
+      "table_ranks_match_npz": true,
+      "table_stored_flags_match_npz": true,
+      "target": 19358176,
+      "pass": true
+    }
+  },
+  "scripts": [
+    "examples/recovery_tuning.py",
+    "examples/recovery_tuning_check.py"
+  ]
+}

@@ -1,0 +1,501 @@
+{
+  "stage": "lora_outofstyle_control",
+  "date": "2026-10-29",
+  "design": "results/lora_outofstyle_design.md (frozen before training; pressure-tested by Muse Spark, Gemini, Nemotron, Glimmer)",
+  "question": "does the distilled-LoRA win survive when the distillation prompts come from a different author (Gemini) in a deliberately different surface style, scored on the same untouched Spark 96?",
+  "model_pair": {
+    "base": "~/qwen-test/data/qwen2.5-0.5b.safetensors (Qwen2.5-0.5B, BF16)",
+    "instruct": "~/qwen-test/data/qwen2.5-0.5b-instruct.safetensors (Qwen2.5-0.5B-Instruct, BF16)",
+    "matrices": "embedding + 24 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 169 delta matrices"
+  },
+  "control_adapter": {
+    "form": "identical to the in-style adapter: LoRA rank 17, all seven block linears x 24 blocks, no embedding, alpha 32 folded into B, fp16 export, 18,696,192 B",
+    "seed": 20261028,
+    "training": "identical recipe to the in-style run (soft forward KL, teacher online, AdamW lr 2e-4 cosine, batch 8, up to 1,014 steps, val KL early stop); only the distillation prompt set changed",
+    "distillation_prompts": "1,500 Gemini-authored prompts (500/bucket), varied surface formats, Spark math suffix phrase banned, novelty-checked vs the 96 eval, the 24 Signet prompts, and the 1,500 in-style prompts (exact / Jaccard >= 0.7 rejected), within-set >= 0.6",
+    "teacher_generation": {
+      "generator": "batched torch port (lora_gen_batch.py), validated vs single-stream",
+      "n": 1500,
+      "answer_tokens_mean": 45.62,
+      "answer_tokens_min": 2,
+      "answer_tokens_max": 48,
+      "ended_with_im_end": 125,
+      "wall_s": 1257.8
+    }
+  },
+  "verification": {
+    "oos_zero_adapter_vs_stored_base_max_abs_per_item_diff": 0.0,
+    "oos_dense_vs_hooked_max_abs_per_item_diff": 9.658766089160054e-06,
+    "torch_port_vs_numpy_base": {
+      "n_items": 12,
+      "max_abs_logprob_diff_vs_numpy_base": 8.626008422929488e-05,
+      "mean_abs_logprob_diff_vs_numpy_base": 2.394229426531484e-05,
+      "wall_s": 5.2
+    },
+    "kv_cache_check_new_prompts": {
+      "n_prompts": 6,
+      "sequence_mismatches": 0,
+      "set": "new Gemini distill prompts"
+    },
+    "batched_decoder_check": {
+      "n_prompts": 20,
+      "sequence_mismatches": 0,
+      "batched_wall_s": 15.4,
+      "single_stream_wall_s": 96.2,
+      "set": "new Gemini distill prompts"
+    },
+    "split_scorer_vs_canonical_spark96_max_abs_per_item_diff": {
+      "base": 3.552713678800501e-15,
+      "full_delta": 3.552713678800501e-15,
+      "uniform_rank32": 3.552713678800501e-15,
+      "mlp_behemoth_lite": 3.552713678800501e-15,
+      "lora_instyle_seed20261028": 3.552713678800501e-15,
+      "lora_oos_seed20261028": 3.552713678800501e-15
+    }
+  },
+  "recompute_report": {
+    "spark96_base": {
+      "recomputed": -11.149778062515304,
+      "stored": -11.149778062515304,
+      "abs_diff": 0.0
+    },
+    "spark96_full_delta": {
+      "recomputed": -8.542466235416498,
+      "stored": -8.542466235416498,
+      "abs_diff": 0.0
+    },
+    "spark96_uniform_rank32": {
+      "recomputed": -11.095640657042859,
+      "stored": -11.095640657042859,
+      "abs_diff": 0.0
+    },
+    "spark96_mlp_behemoth_lite": {
+      "recomputed": -10.54508293414888,
+      "stored": -10.54508293414888,
+      "abs_diff": 0.0
+    },
+    "spark96_lora_instyle": {
+      "recomputed": -7.512636939401433,
+      "stored": -7.512636939401433,
+      "abs_diff": 0.0
+    },
+    "spark96_lora_oos": {
+      "recomputed": -9.532518905972823,
+      "stored": -9.532518905972823,
+      "abs_diff": 0.0
+    },
+    "mirror96_base": {
+      "recomputed": -9.867947749929266,
+      "stored": -9.867947749929266,
+      "abs_diff": 0.0
+    },
+    "mirror96_full_delta": {
+      "recomputed": -11.342378629145813,
+      "stored": -11.342378629145813,
+      "abs_diff": 0.0
+    },
+    "mirror96_uniform_rank32": {
+      "recomputed": -10.378152140427774,
+      "stored": -10.378152140427774,
+      "abs_diff": 0.0
+    },
+    "mirror96_mlp_behemoth_lite": {
+      "recomputed": -9.682131352741825,
+      "stored": -9.682131352741825,
+      "abs_diff": 0.0
+    },
+    "mirror96_lora_instyle_seed20261028": {
+      "recomputed": -7.257416431664798,
+      "stored": -7.257416431664798,
+      "abs_diff": 0.0
+    },
+    "mirror96_lora_oos_seed20261028": {
+      "recomputed": -10.150382484487205,
+      "stored": -10.150382484487205,
+      "abs_diff": 0.0
+    }
+  },
+  "spark96_table": [
+    {
+      "name": "base",
+      "bytes": 0,
+      "mean_target_logprob": -11.149778062515304,
+      "accuracy": 0.03125,
+      "gap_closed": {
+        "knowledge": 0.0,
+        "instruction": 0.0,
+        "math": 0.0,
+        "overall": 0.0
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.691127898157578,
+        "instruction": -16.278045431137716,
+        "math": -7.480160858250617
+      },
+      "split": {
+        "mean_target_logprob": -11.149778062515304,
+        "mean_first_token_logprob": -8.160787214677276,
+        "mean_continuation_logprob": -2.98899084783803,
+        "first_token_share_of_total": 0.7319237359632489,
+        "first_token_accuracy": 0.03125
+      }
+    },
+    {
+      "name": "full_delta",
+      "bytes": 987922432,
+      "mean_target_logprob": -8.542466235416498,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.0,
+        "instruction": 1.0,
+        "math": 1.0,
+        "overall": 1.0
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.848183565785732,
+        "instruction": -14.238146604209183,
+        "math": -3.54106853625458
+      },
+      "split": {
+        "mean_target_logprob": -8.542466235416498,
+        "mean_first_token_logprob": -6.785011166081293,
+        "mean_continuation_logprob": -1.7574550693352056,
+        "first_token_share_of_total": 0.7942684207461174,
+        "first_token_accuracy": 0.16666666666666666
+      }
+    },
+    {
+      "name": "uniform_rank32",
+      "bytes": 19434496,
+      "mean_target_logprob": -11.095640657042859,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.07824083717894015,
+        "instruction": 0.1663986170274122,
+        "math": -0.08154610464565101,
+        "overall": 0.020763686533300157
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.546934390718622,
+        "instruction": -15.938609087460968,
+        "math": -7.801378492948986
+      },
+      "split": {
+        "mean_target_logprob": -11.095640657042859,
+        "mean_first_token_logprob": -8.321575563340312,
+        "mean_continuation_logprob": -2.7740650937025477,
+        "first_token_share_of_total": 0.7499860369088527,
+        "first_token_accuracy": 0.010416666666666666
+      }
+    },
+    {
+      "name": "mlp_behemoth_lite",
+      "bytes": 19358176,
+      "mean_target_logprob": -10.54508293414888,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": {
+        "knowledge": 0.0366292809886672,
+        "instruction": 0.3496144237861203,
+        "math": 0.26234510944899664,
+        "overall": 0.2319228264458408
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.623622172360658,
+        "instruction": -15.564867378179114,
+        "math": -6.446759251906864
+      },
+      "split": {
+        "mean_target_logprob": -10.545082934148878,
+        "mean_first_token_logprob": -7.77704261181524,
+        "mean_continuation_logprob": -2.76804032233364,
+        "first_token_share_of_total": 0.737504167618284,
+        "first_token_accuracy": 0.010416666666666666
+      }
+    },
+    {
+      "name": "lora_instyle_seed20261028",
+      "bytes": 18696192,
+      "mean_target_logprob": -7.512636939401433,
+      "accuracy": 0.16666666666666666,
+      "gap_closed": {
+        "knowledge": 1.7992057332133136,
+        "instruction": 1.3509266840787184,
+        "math": 1.2286672174198003,
+        "overall": 1.3949774190074422
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.375291889361169,
+        "instruction": -13.522291673019085,
+        "math": -2.640327255824046
+      },
+      "split": {
+        "mean_target_logprob": -7.5126369394014345,
+        "mean_first_token_logprob": -5.653922594269196,
+        "mean_continuation_logprob": -1.8587143451322374,
+        "first_token_share_of_total": 0.7525882908857392,
+        "first_token_accuracy": 0.16666666666666666
+      }
+    },
+    {
+      "name": "lora_oos_seed20261028",
+      "bytes": 18696192,
+      "mean_target_logprob": -9.532518905972823,
+      "accuracy": 0.041666666666666664,
+      "gap_closed": {
+        "knowledge": 1.8568388037815613,
+        "instruction": 0.4017274712198076,
+        "math": 0.15491983251476887,
+        "overall": 0.6202783801053933
+      },
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.269077348600231,
+        "instruction": -15.458562033851464,
+        "math": -6.869917335466779
+      },
+      "split": {
+        "mean_target_logprob": -9.532518905972825,
+        "mean_first_token_logprob": -7.515263407154972,
+        "mean_continuation_logprob": -2.0172554988178533,
+        "first_token_share_of_total": 0.7883816944172128,
+        "first_token_accuracy": 0.041666666666666664
+      }
+    }
+  ],
+  "mirror96_table": {
+    "base": {
+      "mean_target_logprob": -9.867947749929266,
+      "accuracy": 0.010416666666666666,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -8.721762527338047,
+        "instruction": -12.132749726952033,
+        "math": -8.749330995497717
+      },
+      "split": {
+        "mean_target_logprob": -9.867947749929266,
+        "mean_first_token_logprob": -7.233389302217659,
+        "mean_continuation_logprob": -2.634558447711606,
+        "first_token_share_of_total": 0.733018605846338,
+        "first_token_accuracy": 0.010416666666666666
+      },
+      "reference_inverted": true
+    },
+    "full_delta": {
+      "mean_target_logprob": -11.342378629145813,
+      "accuracy": 0.03125,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.933448020262028,
+        "instruction": -12.846624191474309,
+        "math": -13.247063675701103
+      },
+      "split": {
+        "mean_target_logprob": -11.342378629145813,
+        "mean_first_token_logprob": -8.604478402912138,
+        "mean_continuation_logprob": -2.737900226233675,
+        "first_token_share_of_total": 0.7586132225212213,
+        "first_token_accuracy": 0.03125
+      },
+      "reference_inverted": true
+    },
+    "uniform_rank32": {
+      "mean_target_logprob": -10.378152140427774,
+      "accuracy": 0.03125,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.161988914292191,
+        "instruction": -12.723133070905828,
+        "math": -9.249334436085304
+      },
+      "split": {
+        "mean_target_logprob": -10.378152140427774,
+        "mean_first_token_logprob": -7.762145926754116,
+        "mean_continuation_logprob": -2.616006213673657,
+        "first_token_share_of_total": 0.747931406451146,
+        "first_token_accuracy": 0.03125
+      },
+      "reference_inverted": true
+    },
+    "mlp_behemoth_lite": {
+      "mean_target_logprob": -9.682131352741825,
+      "accuracy": 0.03125,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -9.12095770224002,
+        "instruction": -12.276532147523733,
+        "math": -7.648904208461722
+      },
+      "split": {
+        "mean_target_logprob": -9.682131352741825,
+        "mean_first_token_logprob": -7.0722214671431205,
+        "mean_continuation_logprob": -2.6099098855987033,
+        "first_token_share_of_total": 0.7304405620504602,
+        "first_token_accuracy": 0.03125
+      },
+      "reference_inverted": true
+    },
+    "lora_instyle_seed20261028": {
+      "mean_target_logprob": -7.257416431664798,
+      "accuracy": 0.020833333333333332,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -6.346241841805572,
+        "instruction": -10.225459941697393,
+        "math": -5.200547511491431
+      },
+      "split": {
+        "mean_target_logprob": -7.257416431664798,
+        "mean_first_token_logprob": -5.370503748444823,
+        "mean_continuation_logprob": -1.886912683219976,
+        "first_token_share_of_total": 0.7400021480113507,
+        "first_token_accuracy": 0.020833333333333332
+      },
+      "reference_inverted": true
+    },
+    "lora_oos_seed20261028": {
+      "mean_target_logprob": -10.150382484487205,
+      "accuracy": 0.03125,
+      "gap_closed": null,
+      "per_bucket_mean_target_logprob": {
+        "knowledge": -7.794483201801846,
+        "instruction": -12.335535129773463,
+        "math": -10.321129121886305
+      },
+      "split": {
+        "mean_target_logprob": -10.150382484487205,
+        "mean_first_token_logprob": -8.05428723115788,
+        "mean_continuation_logprob": -2.096095253329322,
+        "first_token_share_of_total": 0.7934959341155096,
+        "first_token_accuracy": 0.03125
+      },
+      "reference_inverted": true
+    }
+  },
+  "preregistered_rule": {
+    "thresholds": ">= 0.60 survives / 0.40-0.60 partly / < 0.40 mostly style",
+    "oos_gap_closed": 0.6202783801053933,
+    "instyle_gap_closed_seed20261028": 1.3949774190074422,
+    "lite_gap_closed": 0.2319228264458408,
+    "verdict": "survives",
+    "verdict_text": "gap closed >= 0.60: the adapter win is not only style; it survives an author/phrasing shift in the training prompts, far above the factored patch",
+    "crossover": false,
+    "mirror_read": "mirror reference inverted: on the Gemini-96 the full fine-tune (-11.3424) scores below the base model (-9.8679), so no mirror gap-closed fraction is meaningful and the crossover read uses raw mean logprob. On raw score the in-style adapter (-7.2574) beats the out-of-style adapter (-10.1504) on the Gemini-96 as well as on the Spark-96: no crossover, no home-turf advantage for the out-of-style adapter on its own author's set"
+  },
+  "training_log": {
+    "seed": 20261028,
+    "lr": 0.0002,
+    "batch": 8,
+    "epochs_max": 6,
+    "alpha": 32.0,
+    "rank": 17,
+    "scale": 1.8823529411764706,
+    "checks": [
+      {
+        "step": 100,
+        "epoch": 0,
+        "val_kl": 0.10344945965265677,
+        "wall_s": 1118.9
+      },
+      {
+        "step": 200,
+        "epoch": 1,
+        "val_kl": 0.10006200113578893,
+        "wall_s": 2241.4
+      },
+      {
+        "step": 300,
+        "epoch": 1,
+        "val_kl": 0.08481685903514692,
+        "wall_s": 3372.8
+      },
+      {
+        "step": 400,
+        "epoch": 2,
+        "val_kl": 0.08767543532371573,
+        "wall_s": 4491.8
+      },
+      {
+        "step": 500,
+        "epoch": 2,
+        "val_kl": 0.07908695078226917,
+        "wall_s": 5625.2
+      },
+      {
+        "step": 600,
+        "epoch": 3,
+        "val_kl": 0.08046431676842862,
+        "wall_s": 7267.6
+      },
+      {
+        "step": 700,
+        "epoch": 4,
+        "val_kl": 0.07656098792718213,
+        "wall_s": 8454.5
+      },
+      {
+        "step": 800,
+        "epoch": 4,
+        "val_kl": 0.07482131417730237,
+        "wall_s": 9635.2
+      },
+      {
+        "step": 900,
+        "epoch": 5,
+        "val_kl": 0.07337662312675507,
+        "wall_s": 10793.4
+      },
+      {
+        "step": 1000,
+        "epoch": 5,
+        "val_kl": 0.07288784143273536,
+        "wall_s": 11961.6
+      },
+      {
+        "step": 1014,
+        "epoch": 5,
+        "val_kl": 0.07288767455604259,
+        "wall_s": 12228.2
+      }
+    ],
+    "best_val_kl": 0.07288784143273536,
+    "steps_run": 1014,
+    "wall_s": 12228.2,
+    "peak_rss_mb": 5781.2
+  },
+  "instyle_reference": {
+    "teacher_generation": {
+      "generator": "batched torch port (lora_gen_batch.py), validated vs single-stream",
+      "n": 1500,
+      "answer_tokens_mean": 28.194,
+      "answer_tokens_min": 2,
+      "answer_tokens_max": 48,
+      "ended_with_im_end": 753,
+      "wall_s": 2033.7
+    },
+    "best_val_kl_by_seed": {
+      "20261028": 0.9147066904875825,
+      "20261029": 0.8973795699464785,
+      "20261030": 0.9077361160092929
+    }
+  },
+  "generation_records": {
+    "oos_prompts": {
+      "batches": 18,
+      "total_prompts": 1500,
+      "model": "gemini-3.5-flash-lite"
+    },
+    "mirror_probes": {
+      "batches": 3,
+      "total_prompts": 96,
+      "model": "gemini-3.5-flash-lite"
+    }
+  },
+  "scripts": [
+    "examples/lora_outofstyle_gen.py",
+    "examples/lora_outofstyle_mirror_gen.py",
+    "examples/lora_baseline.py",
+    "examples/lora_gen_batch.py",
+    "examples/lora_outofstyle_split.py",
+    "examples/lora_outofstyle_assemble.py"
+  ]
+}
