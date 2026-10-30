@@ -1,9 +1,10 @@
-# Demo video script: Fraction Compressor v0.4 (v5)
+# Demo video script: Fraction Compressor v0.4 (v7)
 
 Under 3 minutes (target 178 to 179.5 seconds; the rules say exactly 3
 minutes and v2 ran 0.07s over). One idea on screen at a time. Narration is
 the text under each NARRATION heading, nothing else is spoken.
-Total narration: 444 words. Final v5 cut: 178.85 seconds (v4: 178.87).
+Total narration: 480 words. Final v7 cut: 178.63 seconds (v6: 178.63,
+v5: 178.85, v4: 178.87).
 
 V5 change vs v4 (one edit, decided Oct 28): the BitDelta honesty line
 in the numbers block speaks the size again: "Honestly: plain one-bit
@@ -17,6 +18,57 @@ span and spliced into the v4 track inside the inter-block silences,
 so every other block and the picture are unchanged from v4. Final
 file: 178.85s, one AAC stream, -16.0 LUFS, true peak -1.9 dBFS.
 Narration text of record: video/narration_v5.txt.
+
+V6 changes vs v5 (built Oct 29, after Vinay's listening notes on
+v5; standing cut): Vinay heard quiet places and too much space
+around the quantum block. Measurements showed no block far off
+(loudness spread 0.86 LU); the quiet was momentary dips, and the
+quantum space was assembly, the two longest pauses in the video
+sat around that block (1.68s and 1.79s) on a track paced at
+atempo 0.886. Fixes, no words cut anywhere: per-block gain matching
+plus a gentle 2:1 compressor (spread down to 0.40 LU); inter-block
+pauses shortened to about 1.3s and internal pauses over 0.34s
+capped at 0.34s; block 1 re-recorded with the naming clarification
+spoken after the swaps-live line (funded entirely by the pause
+tightening). Candidate: 178.33s. The outside panel then reviewed
+v6 (results/video_review_v6_panel.md): ADOPT WITH CHANGES, 4 to 1
+with none against, and two changes were applied for the final:
+(1) the clarification added in print on the title card, in small
+print under the swaps-live lines; (2) about 0.3s of beat restored
+at the "Honestly:" pivot in the numbers block (the pause after
+"sixty-two megabytes.", cut from 0.676s to 0.34s by the cap, now
+0.633s). Final file: video/rough_cut_v6_final.mp4, 178.63s, one
+AAC stream, -16.03 LUFS integrated, true peak -1.84 dB measured on
+the encoded file. Full build record: video/v6_notes.md. Narration
+text of record: video/narration_v6.txt.
+
+V7 changes vs v6 (built Oct 30, at Vinay's go, following Muse
+Wonder's review of the video): two changes only. (1) In the numbers
+block, the spoken sentence "Same pattern on SmolLM2." is replaced
+by: "Honestly, the patch's first-word accuracy stays below the base
+model's own: this is probability recovery, not solved tasks." Only
+block 6 was re-recorded (cloned voice, same method) and spliced in
+at the pause boundaries, so every pause and every other block is
+unchanged. (2) The numbers slide gains one printed line:
+"First-token accuracy: patch 0.010 vs base 0.031". Internal review
+(results/video_review_v7_panel.md): SHIP unanimously, Glimmer,
+Spark, Gemini, and Wonder. Final file: video/rough_cut_v7_final.mp4,
+178.627s, one AAC stream, -16.02 LUFS integrated, true peak -1.80 dB
+measured on the encoded file. Full build record: video/v7_notes.md.
+Narration text of record: video/narration_v7.txt. Vinay adopted v7
+as the submission cut on Oct 30, 2026.
+
+FINAL CUT change (DONE in v6, Oct 29; originally planned for the
+Nov 2-3 final cut, decided by Vinay Oct 29): the naming
+clarification is in block 0, spoken right after "It plugs into the
+base and swaps behavior live, well under a second." Line: "To be
+clear: it does not compress the model. Only the fine-tune's change
+gets small. The base stays full size, loaded once." Reason: the
+name "Fraction Compressor" makes readers think the whole model is
+compressed; only the fine-tune's difference is. It is also printed
+on the title card (panel change, see the V6 paragraph above). The
+roughly 9 to 10 seconds it costs were funded by pause tightening
+across the track, not by trims or faster pacing of the words.
 
 V4 changes vs v3 (three edits, all approved by Vinay on Oct 28):
 1. The numbers block now opens with the Llama pair (Vinay's ordering:
@@ -55,7 +107,10 @@ to the 1.5B test only.
 
 ON SCREEN: Title card: FRACTION COMPRESSOR v0.4, by Vinay Ganji. Under
 it, one line: a fine-tune squeezed into a patch file, about 19 MB
-instead of about 1 GB. Then the use cases: many fine-tunes on one base,
+instead of about 1 GB. Under the plugs-in and swaps-live lines, the
+clarification in small print: "To be clear: this does not compress
+the model. Only the fine-tune's change gets small. The base stays
+full size, loaded once." Then the use cases: many fine-tunes on one base,
 no full copies stored; send a fine-tune as a small file; switch behavior
 instantly; run on small machines. Small line at the bottom: Built with
 Ember, powered by Muse Spark.
@@ -65,7 +120,9 @@ Hi, I'm Vinay Ganji. This week, for the Meta hackathon, I built
 Fraction Compressor. I built it with Ember, my AI agent, powered by
 Muse Spark. It turns a fine-tuned model into one patch file: about
 nineteen megabytes instead of about a gigabyte. It plugs into the base
-and swaps behavior live, well under a second. One base carries many
+and swaps behavior live, well under a second. To be clear: it does not
+compress the model. Only the fine-tune's change gets small. The base
+stays full size, loaded once. One base carries many
 fine-tunes, no full copies stored. Send a fine-tune as a small file.
 Switch behavior instantly. Run on small machines.
 
@@ -204,7 +261,13 @@ Fine-tunes to carry and swap: one base, many behaviors.
   line's spoken size restored; panel record in
   results/video_review_v5_panel.md), paced to the v4 block-6 span and
   spliced into the v4 track (final file: 178.85s, -16.0 LUFS
-  integrated, true peak -1.9 dBFS).
+  integrated, true peak -1.9 dBFS). V6: block 1 re-recorded from
+  video/narration_v6.txt (the clarification line); the whole track
+  pause-tightened and level-matched, then the panel's two fixes
+  (printed clarification on the title card, 0.3s of beat restored at
+  the honesty pivot) applied in video/rough_cut_v6_final.mp4
+  (178.63s, -16.03 LUFS integrated, true peak -1.84 dB measured on
+  the encoded file). Build record: video/v6_notes.md.
 - Timings above are targets; the final cut follows the recorded
   paragraph lengths and must land between 178 and 179.5 seconds total.
 - The demo frames come from the genuine hotswap_v2.cast recording;

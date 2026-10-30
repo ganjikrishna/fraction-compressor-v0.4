@@ -6,6 +6,8 @@ What "fraction" means here: not math fractions. A fine-tuned AI model is a base 
 
 One thing to be clear about: this tool does not compress a model. It compresses the difference a fine-tune makes to a model. The base model stays its full size and has to be loaded for a patch to work. What shrinks to a fraction is the fine-tune's change: from about 1 GB to about 19 MB on the Qwen2.5-0.5B pair used in these tests.
 
+The patch is a lossy, training-free distribution format for a fine-tune delta: at 19,358,176 bytes it closes 23.2% of the gap (0.605 of 2.607 nats), with first-token accuracy 0.010 (below base 0.031), and it is not a training aid. It is useful only where training cannot happen and 23.2% gap closure with degraded first-token accuracy is acceptable: weights-only fine-tunes, many variants against one base, live hot-swap (0.104 s and 0.087 s, file-load times on the demo machine, in the recorded demo), deterministic checkable bytes, no data trail or teacher bill. Where training is available, a distilled LoRA at 18,696,192 bytes, just under the patch's size, closes far more of the gap on these tests (1.362 against 0.232).
+
 ![How Fraction Compressor v0.4 works](docs/how-it-works.svg)
 
 ## In plain words
@@ -77,7 +79,7 @@ So the scale answer is mixed and we state it that way: the format and the recipe
 
 ### Baseline: a plain 1-bit delta, priced honestly
 
-A fair question (raised by a fresh-eyes GPT-OSS review) is why not a plain 1-bit delta, the BitDelta idea: sign of each delta weight, one scale per matrix. The catch is price: a plain 1-bit delta cannot go below 1 bit per weight, which on the first pair's 169 matrices is 61,745,828 bytes. At our 19.4 MB budget it does not fit at all; the factored format is the only one of the two that exists there. At the plain format's own floor price, the comparison flips: the BitDelta initialization (sign times the per-matrix mean absolute value, exactly as published, with no scale distillation or any training) closes 43.6% of the gap on the same 96 questions, against 38.5% for our factored format at uniform rank 108 priced just under it (61,258,816 bytes). So the honest summary is a two-budget curve: below about 62 MB on this pair the factored format wins by reach, and at about 62 MB the plain initialization wins on quality. Full record: `results/bitdelta_baseline.json`, judged in `results/spark_judging_baseline.md`.
+A fair question (raised by a fresh-eyes GPT-OSS review) is why not a plain 1-bit delta, the BitDelta idea: sign of each delta weight, one scale per matrix. The catch is price: a plain 1-bit delta cannot go below 1 bit per weight, which on the first pair's 169 matrices is 61,745,828 bytes. At our 19.4 MB budget it does not fit at all; the factored format fits below BitDelta's floor, and superiority over other training-free low-rank formats was not established. At the plain format's own floor price, the comparison flips: the BitDelta initialization (sign times the per-matrix mean absolute value, exactly as published, with no scale distillation or any training) closes 43.6% of the gap on the same 96 questions, against 38.5% for our factored format at uniform rank 108 priced just under it (61,258,816 bytes). So the honest summary is a two-budget curve: below about 62 MB on this pair the factored format fits where the plain one cannot, and at about 62 MB the plain initialization wins on quality. Full record: `results/bitdelta_baseline.json`, judged in `results/spark_judging_baseline.md`.
 
 ### How these numbers are checked
 

@@ -1,0 +1,15 @@
+Hi, I'm Vinay Ganji. This week, for the Meta hackathon, I built Fraction Compressor. I built it with Ember, my AI agent, powered by Muse Spark. It turns a fine-tuned model into one patch file: about nineteen megabytes instead of about a gigabyte. It plugs into the base and swaps behavior live, well under a second. To be clear: it does not compress the model. Only the fine-tune's change gets small. The base stays full size, loaded once. One base carries many fine-tunes, no full copies stored. Send a fine-tune as a small file. Switch behavior instantly. Run on small machines.
+
+Honesty first: one-bit delta compression is published, BitDelta and Delta-CoMe, and our work predates this week. Built fresh this week: the factored runtime, Spark recipes designed in the loop, the first-token gate, and the verification harness. The gate, plainly: behavior is set by the first generated token; if it does not change, the skill never starts.
+
+A fine-tune is a base model plus a patch: their difference. That difference: nine hundred eighty-eight million bytes. It keeps a fraction: nought point three bits per weight, all in. Ten fine-tunes, ten near-full models.
+
+Do it yourself: you need a base and its fine-tune. Clone the repo. Run the quickstart: it squeezes a sample patch, printing size and error. Run the patch maker: it subtracts the fine-tune from its base and writes one file, about nineteen million bytes.
+
+One base model, loaded once. I ask for strict JSON. The base writes the right object, then rambles, failing the format check. Watch: the patch swaps in live, well under a second. Same question again: exactly the object, check passed. Same patch, new question: the capital of Japan. Base repeats a wrong city; the patch, one clean line.
+
+First, Meta's Llama 3.2 1B: recovery ran weaker; uniform recipe scored below the base. The headline pair, Qwen2.5-0.5B: nineteen million bytes against nine hundred eighty-eight million, fifty-one times smaller. The measure: how strongly the model backs the answer. On ninety-six questions, Spark's recipe at the human budget closes twenty-three point two percent of the gap; the human recipe, two point one. Winner: mlp_behemoth_lite. Honestly, the patch's first-word accuracy stays below the base model's own: this is probability recovery, not solved tasks. On Qwen2.5-1.5B, Spark's recipe won by nought point one three four nats, inside budget. Honestly: plain one-bit closes more at sixty-two megabytes. Our win is reach: at nineteen million, no one-bit patch fits, ours does.
+
+Then we checked ourselves. Muse Spark proposed the per-layer recipes, generated the fresh test questions, and judged every claim against its result file. Quantum random numbers picked the audit sample: all forty-one checks passed.
+
+This is not a memory file. A memory file is a note the model reads; this is a chip swapped inside the machine, changing the model's math. Fine-tunes to carry and swap: one base, many behaviors.
