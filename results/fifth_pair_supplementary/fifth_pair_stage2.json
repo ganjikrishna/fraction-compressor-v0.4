@@ -1,0 +1,891 @@
+{
+  "stage": "fifth_pair_stage2_real_model_task_benchmark",
+  "date": "2026-10-28",
+  "machine": "Flash (Vinay's Ubuntu box, ssh flash, 12 threads, qwen-test venv: python 3.14 + numpy 2.5.4 + tokenizers 0.23.3)",
+  "model_pair": {
+    "base": "~/qwen7-test/data/base/ (Qwen/Qwen2.5-7B, BF16, Apache 2.0, sharded safetensors)",
+    "instruct": "~/qwen7-test/data/instruct/ (Qwen/Qwen2.5-7B-Instruct, BF16, Apache 2.0, sharded safetensors)",
+    "local_note": "downloaded directly on Flash from Hugging Face (public, non-gated repos; byte sizes verified against the HF API listing: base 15,242,788,009 B, instruct 15,242,788,168 B). The original plan was to download on the Muse VM and copy over; that was dropped after measuring the VM egress at about 2.7 MB/s against about 21 MB/s on Flash. This pair is the 7B scale test requested Oct 28 after the fresh-eyes review asked whether the results survive above 1B parameters",
+    "matrices": "embedding + lm_head (separate: embeddings are NOT tied on Qwen2.5-7B) + 28 blocks x (attn.q/k/v/o_proj, mlp.gate/up/down_proj) = 198 delta matrices"
+  },
+  "probe_set": {
+    "source": "Signet probe items (ITEMS) imported at run time from ~/qwen-test/signet_battery.py on Flash",
+    "label": "pre-existing evaluation data: 24 hand-written probe items from the prior Fraction Compressor work (v0.1-v0.3 / Signet), not created during this event",
+    "n_items": 24,
+    "buckets": {
+      "knowledge": 8,
+      "instruction": 8,
+      "math": 8
+    }
+  },
+  "method": {
+    "configs_per_recipe": "base (no delta), full_delta (Instruct weights == base + full delta on every tensor), factored_delta (base + factored delta per the recipe's rank map)",
+    "streaming": "AirLLM-style layer streaming in our own NumPy runtime (concept from lyogavin/airllm, Apache 2.0; code ours): the eval never holds the model whole; per transformer block the weights are read from the sharded safetensors, the factored delta is added chunk-wise in place, all items pass through the block, and the block is released; the embedding is gathered row-wise; lm_head logits are computed only at answer positions",
+    "factored_application": "rank map applies per layer type across all 28 blocks plus embed and lm_head (198 matrices); factors built with factored.quantize_delta's construction via one exact SVD per matrix sliced per rank (Gram-matrix exact SVD; validated against quantize_delta itself on block matrices, see build_validation; the two 151936-row matrices use the memory-bounded Gram variant with fp64 Gram accumulation, residuals recorded in build_validation)",
+    "scoring": "chat-formatted prompt (ChatML format, system line 'You are Qwen, created by Alibaba Cloud. You are a helpful assistant.'); target logprob = summed log-probability of the answer tokens (Signet convention); accuracy = first-token accuracy; gap_closed = (factored - base) / (full - base) on mean target logprob",
+    "forward_pass": "NumPy Qwen2.5 forward written for this pair (plain RoPE theta 1000000, RMSNorm eps 1e-6, GQA 28 Q / 4 KV heads, untied embeddings), streamed block by block; no external Signet battery exists for this pair, so it is validated by internal consistency (see forward_validation)",
+    "stage1_role": "filter only: no winner is declared from Stage 1 matrix error; the ranking below is by Stage 2 task score",
+    "repricing": "every recipe re-priced on real shapes with factored.storage_bytes before comparison; recipes were generated against the real-shape budget directly (see results/fifth_pair_check1.json), so generation totals and Stage 2 totals use the same basis",
+    "recipe_generation": {
+      "provider": "baseten",
+      "model": "meta-models/muse-spark-open-1026",
+      "budget_bytes_real": 86499328,
+      "recipes_file": "results/fifth_pair_check1.json",
+      "stage1_file": "~/fc-v04-sweep5/stage1.json (Flash workdir)",
+      "stage1_ranking": [
+        {
+          "name": "vocab_titans",
+          "relative_frobenius_error": 0.878455
+        },
+        {
+          "name": "kv_zero_expansion",
+          "relative_frobenius_error": 0.887849
+        },
+        {
+          "name": "gate_up_monolith",
+          "relative_frobenius_error": 0.895313
+        },
+        {
+          "name": "o_proj_sentinel",
+          "relative_frobenius_error": 0.959617
+        },
+        {
+          "name": "down_king",
+          "relative_frobenius_error": 0.970706
+        }
+      ],
+      "stage1_human_uniform_rank32": 0.89971
+    }
+  },
+  "build_validation": {
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 2.9103830456733704e-11,
+      "model.layers.8.mlp.gate_proj.weight": 1.6370904631912708e-11,
+      "model.layers.27.self_attn.o_proj.weight": 2.9103830456733704e-11,
+      "lm_head.weight": 5.820766091346741e-11
+    },
+    "quantize_from_svd_vs_quantize_delta": [
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 8,
+        "max_abs_diff_U": 5.340123065966651e-10,
+        "max_abs_diff_V": 9.266199023361121e-10
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 16,
+        "max_abs_diff_U": 4.6549656837480136e-10,
+        "max_abs_diff_V": 1.5550687820775622e-09
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 32,
+        "max_abs_diff_U": 4.3979305267005664e-10,
+        "max_abs_diff_V": 1.7284087217017685e-09
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 48,
+        "max_abs_diff_U": 2.32038776214194e-10,
+        "max_abs_diff_V": 1.4681412682793216e-09
+      },
+      {
+        "matrix": "model.layers.0.self_attn.q_proj.weight",
+        "rank": 64,
+        "max_abs_diff_U": 2.3274611665041745e-10,
+        "max_abs_diff_V": 1.8456939310240728e-09
+      },
+      {
+        "matrix": "model.layers.0.self_attn.k_proj.weight",
+        "rank": 8,
+        "max_abs_diff_U": 8.70389704754615e-10,
+        "max_abs_diff_V": 9.298647893341005e-10
+      }
+    ],
+    "big_row_matrix_residuals": {
+      "lm_head": {
+        "frobenius_sq": 116.93476850090636,
+        "max_rank_used": 512,
+        "rel_residual_at_max_rank": 0.47592908105618753,
+        "top_singular_value": 6.881757955404939,
+        "singular_value_at_max_rank": 0.14871819709176018
+      },
+      "embed": {
+        "frobenius_sq": 28.708200689218014,
+        "max_rank_used": 512,
+        "rel_residual_at_max_rank": 0.5245515749985749,
+        "top_singular_value": 0.7348900357564881,
+        "singular_value_at_max_rank": 0.10881206465610913
+      }
+    },
+    "build_wall_s": 4172.72,
+    "build_peak_rss_mb": 8349.5
+  },
+  "forward_validation": {
+    "knowledge": {
+      "base_mean_target_logprob": -7.988778311716536,
+      "full_mean_target_logprob": -22.78111159716978,
+      "gap_full_minus_base": -14.792333285453243
+    },
+    "instruction": {
+      "base_mean_target_logprob": -10.477565026817068,
+      "full_mean_target_logprob": -29.713482129701106,
+      "gap_full_minus_base": -19.235917102884038
+    },
+    "math": {
+      "base_mean_target_logprob": -3.323254840431753,
+      "full_mean_target_logprob": -0.8127885638179378,
+      "gap_full_minus_base": 2.510466276613815
+    }
+  },
+  "forward_validation_verdict": {
+    "method": "internal consistency (no external Signet battery exists for this pair): graft check base + (instruct - base) == instruct on 4 sampled tensors including embed and lm_head; quantize_from_svd cross-checked against factored.quantize_delta on block matrices; the full-delta config must beat base overall on identical prompts; the forward itself is streamed (block by block), so a PASS also certifies the streaming path end to end",
+    "overall_gap_full_minus_base": -10.505928037241155,
+    "graft_check_max_abs_diff": {
+      "model.embed_tokens.weight": 2.9103830456733704e-11,
+      "model.layers.8.mlp.gate_proj.weight": 1.6370904631912708e-11,
+      "model.layers.27.self_attn.o_proj.weight": 2.9103830456733704e-11,
+      "lm_head.weight": 5.820766091346741e-11
+    },
+    "quantize_from_svd_max_abs_diff": 1.8456939310240728e-09,
+    "quantize_product_max_abs_diff": 5.401651164121252e-11,
+    "quantize_gate_note": "the gate is the PRODUCT-level diff (the applied delta U @ V.T vs factored.quantize_delta's, from product_check.json): factor-level diffs reach 1.85e-9 at 7B because clustered singular values let singular vectors rotate between the two constructions, while the products agree to 5.4e-11. Pair 4's factor-level 1e-9 observation is reported above but is not the gate at this scale.",
+    "verdict": "FAIL"
+  },
+  "gap_closed_note": "one or more factored configs outscore the full fp16 delta itself on this probe set, so gap_closed passes 1.0 and is NOT a recovery fraction for this pair (Glimmer wording limit, Oct 27); the raw mean target logprob margin is the honest measure",
+  "full_delta_fp16_bytes_real_shapes": 15230566400,
+  "shared_configs": {
+    "base": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.0,
+        "mean_target_logprob": -7.263199392988452
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -7.988778311716536
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -10.477565026817068
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -3.323254840431753
+        }
+      }
+    },
+    "full_delta": {
+      "overall": {
+        "n": 24,
+        "accuracy": 0.2916666666666667,
+        "mean_target_logprob": -17.769127430229606
+      },
+      "per_bucket": {
+        "knowledge": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -22.78111159716978
+        },
+        "instruction": {
+          "n": 8,
+          "accuracy": 0.0,
+          "mean_target_logprob": -29.713482129701106
+        },
+        "math": {
+          "n": 8,
+          "accuracy": 0.875,
+          "mean_target_logprob": -0.8127885638179378
+        }
+      }
+    },
+    "base_wall_s": 165.8,
+    "full_delta_wall_s": 164.43,
+    "base_peak_rss_mb": 2217.1,
+    "full_delta_peak_rss_mb": 2199.0
+  },
+  "recipes": [
+    {
+      "name": "o_proj_sentinel",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 0,
+        "lm_head": 0,
+        "attn.q_proj": 64,
+        "attn.k_proj": 16,
+        "attn.v_proj": 16,
+        "attn.o_proj": 96,
+        "mlp.gate": 16,
+        "mlp.up": 16,
+        "mlp.down": 28
+      },
+      "rank0_layer_names": [
+        "embed",
+        "lm_head"
+      ],
+      "real_shape_bytes": 85978112,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.263199392988452
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.988778311716536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.477565026817068
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -3.323254840431753
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -17.769127430229606
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -22.78111159716978
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.713482129701106
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8127885638179378
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -9.628954710168967
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.631735823812122
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -16.1272633302077
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.12786497648708325
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": null,
+        "instruction": null,
+        "math": 1.2728272407844083,
+        "overall": null
+      },
+      "wall_s": 169.52,
+      "eval_wall_s": 169.52,
+      "peak_rss_mb": 2213.5
+    },
+    {
+      "name": "vocab_titans",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 512,
+        "lm_head": 512,
+        "attn.q_proj": 32,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 32,
+        "mlp.gate": 32,
+        "mlp.up": 32,
+        "mlp.down": 20
+      },
+      "rank0_layer_names": [
+        "attn.k_proj",
+        "attn.v_proj"
+      ],
+      "real_shape_bytes": 85787648,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.263199392988452
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.988778311716536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.477565026817068
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -3.323254840431753
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -17.769127430229606
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -22.78111159716978
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.713482129701106
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8127885638179378
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -11.203591512795528
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.252057302419825
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -20.218165804360748
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -1.1405514316060161
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": null,
+        "instruction": null,
+        "math": 0.8694414376957201,
+        "overall": null
+      },
+      "wall_s": 164.21,
+      "eval_wall_s": 164.21,
+      "peak_rss_mb": 2694.0
+    },
+    {
+      "name": "gate_up_monolith",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 8,
+        "lm_head": 8,
+        "attn.q_proj": 16,
+        "attn.k_proj": 8,
+        "attn.v_proj": 8,
+        "attn.o_proj": 16,
+        "mlp.gate": 80,
+        "mlp.up": 80,
+        "mlp.down": 24
+      },
+      "rank0_layer_names": [],
+      "real_shape_bytes": 85744640,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.263199392988452
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.988778311716536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.477565026817068
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -3.323254840431753
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -17.769127430229606
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -22.78111159716978
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.713482129701106
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8127885638179378
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -13.778357063520964
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.728515869577473
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -26.61884959322897
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -1.9877057277564496
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": null,
+        "instruction": null,
+        "math": 0.5319924530022878,
+        "overall": null
+      },
+      "wall_s": 157.0,
+      "eval_wall_s": 157.0,
+      "peak_rss_mb": 2390.8
+    },
+    {
+      "name": "down_king",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 0,
+        "lm_head": 0,
+        "attn.q_proj": 8,
+        "attn.k_proj": 8,
+        "attn.v_proj": 8,
+        "attn.o_proj": 8,
+        "mlp.gate": 8,
+        "mlp.up": 8,
+        "mlp.down": 64
+      },
+      "rank0_layer_names": [
+        "embed",
+        "lm_head"
+      ],
+      "real_shape_bytes": 86401024,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.263199392988452
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.988778311716536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.477565026817068
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -3.323254840431753
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -17.769127430229606
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -22.78111159716978
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.713482129701106
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8127885638179378
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.3333333333333333,
+            "mean_target_logprob": -9.583664534606465
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.361690477509079
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -16.304358582660317
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 1.0,
+              "mean_target_logprob": -0.08494454364999465
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": null,
+        "instruction": null,
+        "math": 1.2899238388295258,
+        "overall": null
+      },
+      "wall_s": 158.63,
+      "eval_wall_s": 158.63,
+      "peak_rss_mb": 2269.3
+    },
+    {
+      "name": "kv_zero_expansion",
+      "kind": "spark_recipe",
+      "ranks": {
+        "embed": 64,
+        "lm_head": 64,
+        "attn.q_proj": 48,
+        "attn.k_proj": 0,
+        "attn.v_proj": 0,
+        "attn.o_proj": 48,
+        "mlp.gate": 48,
+        "mlp.up": 48,
+        "mlp.down": 28
+      },
+      "rank0_layer_names": [
+        "attn.k_proj",
+        "attn.v_proj"
+      ],
+      "real_shape_bytes": 86289408,
+      "configs": {
+        "base": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.263199392988452
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -7.988778311716536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -10.477565026817068
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -3.323254840431753
+            }
+          }
+        },
+        "full_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -17.769127430229606
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -22.78111159716978
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.713482129701106
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -0.8127885638179378
+            }
+          }
+        },
+        "factored_delta": {
+          "overall": {
+            "n": 24,
+            "accuracy": 0.2916666666666667,
+            "mean_target_logprob": -14.900505683507832
+          },
+          "per_bucket": {
+            "knowledge": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -12.22496743504536
+            },
+            "instruction": {
+              "n": 8,
+              "accuracy": 0.0,
+              "mean_target_logprob": -29.668316640403713
+            },
+            "math": {
+              "n": 8,
+              "accuracy": 0.875,
+              "mean_target_logprob": -2.808232975074426
+            }
+          }
+        }
+      },
+      "gap_closed": {
+        "knowledge": null,
+        "instruction": null,
+        "math": 0.205149883969763,
+        "overall": null
+      },
+      "wall_s": 156.76,
+      "eval_wall_s": 156.76,
+      "peak_rss_mb": 2428.7
+    }
+  ],
+  "human_baseline": {
+    "name": "uniform_rank32",
+    "kind": "human_baseline",
+    "ranks": {
+      "embed": 32,
+      "lm_head": 32,
+      "attn.q_proj": 32,
+      "attn.k_proj": 32,
+      "attn.v_proj": 32,
+      "attn.o_proj": 32,
+      "mlp.gate": 32,
+      "mlp.up": 32,
+      "mlp.down": 32
+    },
+    "rank0_layer_names": [],
+    "real_shape_bytes": 86499328,
+    "configs": {
+      "base": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.0,
+          "mean_target_logprob": -7.263199392988452
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -7.988778311716536
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -10.477565026817068
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -3.323254840431753
+          }
+        }
+      },
+      "full_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.2916666666666667,
+          "mean_target_logprob": -17.769127430229606
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -22.78111159716978
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -29.713482129701106
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.875,
+            "mean_target_logprob": -0.8127885638179378
+          }
+        }
+      },
+      "factored_delta": {
+        "overall": {
+          "n": 24,
+          "accuracy": 0.2916666666666667,
+          "mean_target_logprob": -14.47483288728012
+        },
+        "per_bucket": {
+          "knowledge": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -12.635041982060795
+          },
+          "instruction": {
+            "n": 8,
+            "accuracy": 0.0,
+            "mean_target_logprob": -28.41266098061606
+          },
+          "math": {
+            "n": 8,
+            "accuracy": 0.875,
+            "mean_target_logprob": -2.3767956991635053
+          }
+        }
+      }
+    },
+    "gap_closed": {
+      "knowledge": null,
+      "instruction": null,
+      "math": 0.3770053197228594,
+      "overall": null
+    },
+    "wall_s": 160.05,
+    "eval_wall_s": 160.05,
+    "peak_rss_mb": 2377.8
+  },
+  "ranking_by_task_score": [
+    {
+      "position": 1,
+      "name": "down_king",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -9.583664534606465,
+      "factored_accuracy": 0.3333333333333333,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 86401024
+    },
+    {
+      "position": 2,
+      "name": "o_proj_sentinel",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -9.628954710168967,
+      "factored_accuracy": 0.2916666666666667,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 85978112
+    },
+    {
+      "position": 3,
+      "name": "vocab_titans",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -11.203591512795528,
+      "factored_accuracy": 0.2916666666666667,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 85787648
+    },
+    {
+      "position": 4,
+      "name": "gate_up_monolith",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -13.778357063520964,
+      "factored_accuracy": 0.2916666666666667,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 85744640
+    },
+    {
+      "position": 5,
+      "name": "uniform_rank32",
+      "kind": "human_baseline",
+      "factored_mean_target_logprob": -14.47483288728012,
+      "factored_accuracy": 0.2916666666666667,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 86499328
+    },
+    {
+      "position": 6,
+      "name": "kv_zero_expansion",
+      "kind": "spark_recipe",
+      "factored_mean_target_logprob": -14.900505683507832,
+      "factored_accuracy": 0.2916666666666667,
+      "overall_gap_closed": null,
+      "real_shape_bytes": 86289408
+    }
+  ],
+  "winner": {
+    "name": "down_king",
+    "kind": "spark_recipe",
+    "note": "top recipe by Stage 2 task score; byte-fairness is judged on real_shape_bytes vs the uniform recipe and the byte-matched confirmation runs in fifth_pair_heldout96"
+  },
+  "api_calls": "recipe generation only (Baseten, logged in results/api_usage_log.jsonl); the rest is compute",
+  "scripts": [
+    "examples/fifth_pair_precompute.py",
+    "examples/fifth_pair_stage2.py"
+  ]
+}

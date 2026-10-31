@@ -1,0 +1,134 @@
+{
+  "task": "fifth_pair_yardstick_spark_interpretation",
+  "date": "2026-10-29T13:16:57Z",
+  "judge": {
+    "provider": "meta-model-api",
+    "model": "muse-spark-1.3",
+    "usage": {
+      "completion_tokens": 6175,
+      "prompt_tokens": 1751,
+      "total_tokens": 7926,
+      "completion_tokens_details": {
+        "reasoning_tokens": 5247
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "wall_s": 21.86
+  },
+  "claims": [
+    {
+      "claim_id": "A1",
+      "claim": "Continuity: the re-run of the original chat-template battery reproduces the published held-out 96 results exactly (same overall mean target logprob to 6 decimals for all six configs; per-item max difference 0.0 for uniform_rank32 and down_king). An independent recomputation from per-item rows passes 37/37 checks, including aggregate recompute, log-probability sidecar consistency, and KL(full||full)=0. Source: results/fifth_pair_yardstick_recompute.json."
+    },
+    {
+      "claim_id": "A2",
+      "claim": "Echo artifact removed by the corrected battery: the restart-echo rate (argmax first token restarts the raw user prompt) is 0.000 on the corrected battery for full_delta, uniform_rank32, down_king, full_a025 and full_a05, versus 0.083 for every delta config on the chat battery; base is 0.052 corrected versus 0.208 chat. On the chat battery the full fine-tune's echo items score -18.34 versus -15.76 on its non-echo items. Source: results/fifth_pair_yardstick_recompute.json (echo sections)."
+    },
+    {
+      "claim_id": "A3",
+      "claim": "Full fine-tune versus base, mean target logprob per subset. Chat battery gaps (full minus base): knowledge -15.56, instruction -11.02, math -0.59. Corrected battery gaps: knowledge -1.02, instruction -0.16, math -0.59 (math uses the identical chat-format protocol in both batteries). So the chat template explains most of the knowledge and instruction deficit, but the full fine-tune still does not beat base on any subset under corrected scoring, and gap_closed is null for every patch on both batteries. Source: results/fifth_pair_yardstick_recompute.json (means, gap_closed)."
+    },
+    {
+      "claim_id": "A4",
+      "claim": "First-token accuracy tells the opposite story from mean logprob. Corrected battery: base overall 0.052 (knowledge 0.0, instruction 0.125, math 0.031); full_delta overall 0.333 (knowledge 0.0, instruction 0.25, math 0.75); down_king overall 0.312 with math 0.75. Knowledge first-token accuracy is 0.000 for every config under raw completion. Interpretation under test: mean logprob against one authored target wording measures phrasing match, and the fine-tune (which prefers its own phrasing) is penalized by it, while first-token choice and generation show a real behavioral gain. Source: results/fifth_pair_yardstick_recompute.json."
+    },
+    {
+      "claim_id": "A5",
+      "claim": "Generation sanity (12 fresh chat-format prompts, greedy, max 40 tokens): programmatic heuristic pass counts are {'base': '7/12', 'full_delta': '11/12', 'down_king': '9/12'}. The fine-tune's only heuristic miss is the reversed-word prompt; base fails most format-constrained instruction prompts and two math prompts. Source: results/fifth_pair_yardstick_recompute.json (generation_heuristics) and results/fifth_pair_yardstick_gen.json."
+    },
+    {
+      "claim_id": "A6",
+      "claim": "Knowledge is bracketed by format: base scores -3.977 on knowledge under the chat template but -12.154 under raw completion, because the 96 items were authored as chat questions with full-sentence answers; raw completion is also a mismatched format for them, just in the opposite direction. Both batteries agree the full fine-tune is below base on knowledge; they disagree on the size (-15.56 chat versus -1.02 corrected). Source: results/fifth_pair_yardstick_recompute.json."
+    },
+    {
+      "claim_id": "B1",
+      "claim": "Shrinkage reproduces the patch profile on scores: full_a025 overall -7.096 corrected and -6.36 chat beats down_king (-7.556 corrected, -8.694 chat) on both batteries, including on math (-2.166 versus -3.16, same protocol in both batteries). full_a05 also beats down_king on the corrected battery overall. patch_vs_curve: neither down_king nor uniform_rank32 beats the best below-full scaling point on either battery. Source: results/fifth_pair_yardstick_recompute.json (means, patch_vs_curve)."
+    },
+    {
+      "claim_id": "B2",
+      "claim": "Tracking of the fine-tune: corrected first-token argmax agreement with full is down_king 0.854, full_a025 0.865, full_a05 0.906; per-item logprob correlation with full is down_king 0.928, full_a025 0.842, full_a05 0.929. So down_king does not track the fine-tune distinctly better than every shrinkage on agreement; on correlation it matches the 0.5 scaling while scoring between the 0.25 and 0.5 scalings. Source: results/fifth_pair_yardstick_recompute.json."
+    },
+    {
+      "claim_id": "B3",
+      "claim": "KL on the corrected battery (mean per-item KL over scored answer positions): down_king is closer to full (0.281) than to base (0.643) on average, driven by math (0.166 versus 1.617); on knowledge and instruction it is closer to base, and only 0.40 of items are closer to full. full_a05 is closer to full overall (0.166). Reference: KL(full||base) mean is 0.829. Source: results/fifth_pair_yardstick_recompute.json (kl_corrected_all_positions)."
+    },
+    {
+      "claim_id": "B4",
+      "claim": "Helped/hurt buckets on the corrected battery (helped: full beats base per item, n=46; hurt: n=50): down_king's agreement with full is 0.848 in the helped bucket and 0.860 in the hurt bucket (not concentrated in helped); its mean logprob minus full's is -0.369 helped and +2.409 hurt. full_a025 shows the same shape stronger (agreement 0.870/0.860, minus-full -0.567/+3.475). Reading under test: the patch's win over full comes from avoiding the hurt bucket (filtering), and plain shrinkage does the same. Source: results/fifth_pair_yardstick_recompute.json (helped_hurt)."
+    },
+    {
+      "claim_id": "B5",
+      "claim": "Denoiser-signature test (panel criterion): along the scaling curve alpha 0.25 to 0.5 to 1.0, agreement with full rises (0.865, 0.906, 1.0) while the corrected overall score falls (-7.096, -7.419, -8.634). down_king (agreement 0.854, score -7.556) sits slightly below the curve rather than above it, so the strong denoiser signature (patch beats the curve at matched agreement) is absent. Source: results/fifth_pair_yardstick_recompute.json (scaling_curve, patch_vs_curve)."
+    },
+    {
+      "claim_id": "B6",
+      "claim": "Overall interpretation under test: WHY down_king beats the full delta on this battery is explained by shrinkage/regularization (Gemini's hypothesis): turning the full delta down to 25-50 percent reproduces and exceeds the patch's scores, matches its helped/hurt shape, and matches or exceeds its agreement with the fine-tune. 'Movement toward the fine-tune' survives only in the weaker distributional sense: the patch's outputs stay much closer to the fine-tune than to base where the fine-tune moved most (math), and it does so as an 86 MB artifact, whereas a scaled delta is a diagnostic that requires keeping the full 15 GB delta. As the explanation for beating the full delta, movement does not stand. Sources: results/fifth_pair_yardstick_recompute.json (all sections)."
+    }
+  ],
+  "verdicts": [
+    {
+      "claim_id": "A1",
+      "verdict": "partly_supported",
+      "reason": "Means match to 6 decimals for all six and 37/37 checks incl KL=0 support continuity, but per-item 0.0 is cited only for uniform_rank32 and down_king, so exactness for all six exceeds item-level evidence shown."
+    },
+    {
+      "claim_id": "A2",
+      "verdict": "supported",
+      "reason": "0.000 corrected vs 0.083 chat for delta configs and 0.052 vs 0.208 for base shows removal, and -18.34 echo vs -15.76 non-echo shows echo penalty."
+    },
+    {
+      "claim_id": "A3",
+      "verdict": "supported",
+      "reason": "Math gap -0.59 in both supports identical protocol; knowledge -15.56 to -1.02 and instruction -11.02 to -0.16 shrink but stay negative, justifying null gap_closed."
+    },
+    {
+      "claim_id": "A4",
+      "verdict": "partly_supported",
+      "reason": "Reversal holds: 0.333 vs 0.052 overall and math 0.75 vs 0.031 opposite logprob, but knowledge 0.000 for every config limits gain claim and phrasing-penalty is interpretation not measured."
+    },
+    {
+      "claim_id": "A5",
+      "verdict": "supported",
+      "reason": "7/12 vs 11/12 vs 9/12 counts cohere with 1-miss for full_delta and described base failures on format and math prompts."
+    },
+    {
+      "claim_id": "A6",
+      "verdict": "supported",
+      "reason": "Base -3.977 chat vs -12.154 raw brackets format effect, and -15.56 vs -1.02 agree on sign below base while disagreeing on size as claimed."
+    },
+    {
+      "claim_id": "B1",
+      "verdict": "supported",
+      "reason": "-7.096>-7.556 and -6.36>-8.694 plus math -2.166>-3.16 show full_a025 beats down_king on both, consistent with neither patch beating best below-full point."
+    },
+    {
+      "claim_id": "B2",
+      "verdict": "partly_supported",
+      "reason": "Agreement 0.854<0.865<0.906 and correlation 0.928~0.929 vs 0.842 support tracking claim, but -7.556 is worse than both -7.096 and -7.419 so not between 0.25-0.5 scalings."
+    },
+    {
+      "claim_id": "B3",
+      "verdict": "supported",
+      "reason": "0.281<0.643 supports closer to full on average, math 0.166 vs 1.617 explains driver, 0.40 items closer allows skew, and 0.166 shows full_a05 closer."
+    },
+    {
+      "claim_id": "B4",
+      "verdict": "supported",
+      "reason": "46+50=96, agreement 0.848 vs 0.860 shows no helped concentration, and -0.369 helped vs +2.409 hurt with same shape for full_a025 supports filtering reading."
+    },
+    {
+      "claim_id": "B5",
+      "verdict": "supported",
+      "reason": "Agreement 0.865,0.906,1.0 rising while scores -7.096,-7.419,-8.634 falling plus down_king 0.854,-7.556 below curve supports absent strong signature."
+    },
+    {
+      "claim_id": "B6",
+      "verdict": "supported",
+      "reason": "25-50% beats patch on scores, matches helped/hurt shape and meets/exceeds agreement, while distributional closeness on math preserves weak movement sense as claimed."
+    }
+  ],
+  "headline": "Battery numbers internally cohere and support shrinkage over strong-denoiser account, aside from limited per-item continuity evidence and B2 between-scalings misstatement.",
+  "disagreements": "B2 says down_king scores between 0.25 (-7.096) and 0.5 (-7.419) scalings but -7.556 is worse than both, so it is below that interval not between; A1 claims exact reproduction for all six on means alone while per-item 0.0 is given only for two configs."
+}

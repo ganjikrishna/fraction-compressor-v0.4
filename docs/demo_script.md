@@ -93,8 +93,7 @@ video/narration_v4.txt; changed slides in video/slides_v4/.
 V3 changes vs v2: opens with Vinay's personal introduction in his own
 cloned voice (name shown as "Vinay Ganji"); one line credits Ember
 (Muse Spark). Swap wording is now "well under a second" everywhere
-(true for both the 0.104s transcript of record and the 0.49s contended
-recording; "about a tenth of a second" removed). Numbers block rebuilt
+(the file-load time on the demo machine of record is 0.104 s to uniform and 0.087 s to lite; a separate contended recording of the same demo took 0.49 s wall-clock under load, which is not a file-load measurement; "about a tenth of a second" removed). Numbers block rebuilt
 around one visual. Demo frames zoomed with the parseable lines boxed.
 Do-it-yourself is a real terminal capture, not a slide. Two plain
 sentences added: what the first-token gate is, and what Muse Spark
@@ -181,7 +180,7 @@ text throughout, wrapped wider for a larger font:
 2. The PATCH SIZES block (full delta 987,922,432 B; uniform rank-32
    patch 19,434,496 B; mlp_behemoth_lite patch 19,358,176 B, both
    patches labeled) and the swap line `>>> SWAP: ... loaded live in
-   0.49s` boxed in amber.
+   0.49s` boxed in amber. (The 0.49 s is that recording's wall-clock time on a loaded machine, not a file-load measurement; the file-load times of record on the demo machine are 0.104 s and 0.087 s, as labeled in the README.)
 3. The lite patch answers the same prompt: exactly the object;
    `JSON SCORE: parseable=True ...` boxed in green.
 4. Capital of Japan: the base's Lauderdale loop boxed in red; the

@@ -4,7 +4,7 @@
 
 What "fraction" means here: not math fractions. A fine-tuned AI model is a base model plus a patch (the weight difference between the two). This tool keeps only a fraction of that patch's information: the patch structure is stored as 1-bit signs, and priced all in (signs, factors, and scales together) that comes to about 0.31 bits per weight on the Qwen pair, in a file small enough to swap in and out live.
 
-One thing to be clear about: this tool does not compress a model. It compresses the difference a fine-tune makes to a model. The base model stays its full size and has to be loaded for a patch to work. What shrinks to a fraction is the fine-tune's change: from about 1 GB to about 19 MB on the Qwen2.5-0.5B pair used in these tests.
+One thing to be clear about: this tool does not compress a model. It compresses the difference a fine-tune makes to a model. The base model stays its full size and has to be loaded for a patch to work. What shrinks to a fraction is the fine-tune's change: from about 1 GB to about 19 MB on the Qwen2.5-0.5B pair used in these tests. That smaller file is lossy: its first-token accuracy is 0.010, below the base model's own 0.031 (full figures in the next paragraph).
 
 The patch is a lossy, training-free distribution format for a fine-tune delta: at 19,358,176 bytes it closes 23.2% of the gap (0.605 of 2.607 nats), with first-token accuracy 0.010 (below base 0.031), and it is not a training aid. It is useful only where training cannot happen and 23.2% gap closure with degraded first-token accuracy is acceptable: weights-only fine-tunes, many variants against one base, live hot-swap (0.104 s and 0.087 s, file-load times on the demo machine, in the recorded demo), deterministic checkable bytes, no data trail or teacher bill. Where training is available, a distilled LoRA at 18,696,192 bytes, just under the patch's size, closes far more of the gap on these tests (1.362 against 0.232).
 
@@ -18,6 +18,8 @@ A fine-tuned model differs from its base model by a patch (the delta). A normal 
 
 You need two models: a base model and a fine-tuned version of that same base, in safetensors format.
 
+Install the dependencies first: `pip install -r requirements.txt` (NumPy for everything, plus the `tokenizers` package for the hot-swap demo; the quickstart in `examples/quickstart.py` needs NumPy alone).
+
 1. Make a patch from the pair (rank 32 everywhere, or pass a per-layer recipe file with `--recipe` instead of `--rank`):
    `python examples/make_patch.py --base <base-model-dir> --finetuned <finetuned-model-dir> --rank 32 --out patch.npz`
    The script subtracts the two models layer by layer, squeezes the difference into the factored format, and writes one patch file. It prints the patch's exact byte price next to the full difference at normal precision.
@@ -25,7 +27,7 @@ You need two models: a base model and a fine-tuned version of that same base, in
    `python examples/make_patch.py --verify patch.npz --base <base-model-dir> --finetuned <finetuned-model-dir>`
 3. Use it: load the patch together with the base model, as in `examples/hotswap_demo.py`, where patches swap in and out of one running base model live.
 
-On the model pair used in this repo's benchmark (Qwen2.5-0.5B base and Instruct), rank 32 gives a patch priced at 19,434,496 bytes against 987,922,432 bytes for the full difference, about 51x smaller. The full run is saved at `results/make_patch_demo.txt`.
+On the model pair used in this repo's benchmark (Qwen2.5-0.5B base and Instruct), rank 32 gives a patch priced at 19,434,496 bytes against 987,922,432 bytes for the full difference, about 51x smaller. The patch is lossy: this uniform rank-32 patch's first-token accuracy is 0.010, the same as the headline recipe's, against the base model's 0.031. The full run is saved at `results/make_patch_demo.txt`.
 
 ## How this is different
 
@@ -73,7 +75,7 @@ Recovery on this pair is weaker than on the other two pairs (15.9% here against 
 
 A fresh-eyes review (GPT-OSS, see `results/fresh_perspective.md`) asked whether any of this survives above 1B parameters, so the same contest ran on a fourth pair, Qwen2.5-1.5B base and Instruct. This round the recipes were priced on the real shapes from the start, and all five of Muse Spark's recipes came in under the human recipe's budget of 39,046,144 bytes. The search winner, Down Dominator, is byte-fair itself at 38,623,232 bytes (it drops the MLP gate and up matrices entirely and spends the bytes on the down projection and the attention output), so it is its own byte-fair headline recipe, no variant needed.
 
-On the same 96 fresh questions, Down Dominator scores -6.344 against the human uniform recipe's -6.478: it still wins, but by about 0.13 score points, far narrower than the first pair's win, and the win does not hold on both halves of the set (the human recipe wins the first 24 questions; Down Dominator wins the 72 newer ones). One pattern from the second pair repeats here: every compressed version outscores the full patch itself (full patch -7.810), so the gap-closed percentage goes above 100% (130.7% against 127.9%) and is NOT a share of the fine-tune recovered on this pair; the raw score margin (about 0.13 points) is the honest measure. The recipe's edge is also not an accuracy edge: the human recipe's first-token accuracy on the 96 is 32.3%, against Down Dominator's 26.0% and the full patch's own 33.3%.
+On the same 96 fresh questions, Down Dominator scores -6.344 against the human uniform recipe's -6.478: it still wins, but by about 0.13 score points, far narrower than the first pair's win, and the win does not hold on both halves of the set (the human recipe wins the first 24 questions; Down Dominator wins the 72 newer ones). One pattern from the second pair repeats here: every compressed version outscores the full patch itself (full patch -7.810), so the gap-closed figure goes above 1.0 (1.307 against 1.279) and is NOT a share of the fine-tune recovered on this pair; the raw score margin (about 0.13 points) is the honest measure. The recipe's edge is also not an accuracy edge: the human recipe's first-token accuracy on the 96 is 32.3%, against Down Dominator's 26.0% and the full patch's own 33.3%.
 
 So the scale answer is mixed and we state it that way: the format and the recipe contest both still work at 1.5B (a roughly 39 MB patch against a 3,087,138,816-byte full patch, about 79x smaller, scoring at the full patch's level on this metric), but the AI-designed recipe's advantage over the plain human recipe shrinks from decisive at 0.5B to narrow and subset-dependent at 1.5B.
 
@@ -97,7 +99,7 @@ Pre-existing work (not part of this submission): Fraction Compressor v0.1 to v0.
 - `examples/quickstart.py`: a 1-minute smoke run on a dummy delta (needs only numpy): prints the storage cost, bits per weight, and the factored error next to the best any factored form could do at the same rank.
 - `fixtures/`: the quantum random fixture for the benchmark's audit sampling (IBM Quantum hardware, backend and job logged in the file).
 - `src/bench.py` and `results/`: the end-to-end task benchmark (base vs full delta vs compressed delta) and the Alien Sweep, where Muse Spark proposed compression recipes that were scored, cross-validated (Gemini arithmetic checks, a Muse Spark judging pass, a Muse Glimmer reference check), and confirmed on 96 fresh held-out questions generated by Muse Spark, on four model pairs. See Benchmark results above.
-- The live hot-swap demo: one base model loaded once, patch files swapped in live in about a tenth of a second (examples/hotswap_demo.py, transcript in results/).
+- The live hot-swap demo: one base model loaded once, patch files swapped in live in about a tenth of a second (file-load time on the demo machine; examples/hotswap_demo.py, transcript in results/).
 
 ## Author and credits
 

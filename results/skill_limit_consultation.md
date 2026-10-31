@@ -8,7 +8,7 @@ You are advising on how to present a benchmark result honestly in a submission. 
 
 Context: Fraction Compressor v0.4 stores the weight difference (delta) between a base model (Qwen2.5-0.5B) and a fine-tuned version of it as a small 1-bit factored patch file, so one base model can swap behaviors by swapping a small file.
 
-The finding: a JSON-extraction fine-tune (NuExtract-1.5-tiny, MIT) scores 9/10 clean extractions itself; the plain base scores 0/10 (it emits end-of-text on the format); our rank-32 compressed patch (19,434,496 bytes) transfers the skill cleanly on only 1/10, because the skill is gated by the first generated token (start JSON vs stop). Broad behavior transfers much better: the Instruct pair closes 23.2% of the score gap on 96 fresh questions and shows clean generation wins.
+The finding: a JSON-extraction fine-tune (NuExtract-1.5-tiny, MIT) scores 9/10 parseable extractions itself (8 clean, 1 partial, 1 failed); the plain base scores 0/10 (it emits end-of-text on the format); our rank-32 compressed patch (19,434,496 bytes) transfers the skill cleanly on only 1/10, because the skill is gated by the first generated token (start JSON vs stop). Broad behavior transfers much better: the Instruct pair closes 23.2% of the score gap on 96 fresh questions and shows clean generation wins.
 
 Question: We found this limit. Options: (a) disclose it upfront as a documented boundary in the README and submission; (b) also test larger patches (rank 64, rank 128) on this gated skill to see whether the boundary moves with size; (c) both. What do you recommend, and what exact one or two sentences should the upfront limit statement say?
 

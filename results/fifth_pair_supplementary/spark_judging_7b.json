@@ -1,0 +1,145 @@
+{
+  "judging_pass": "fifth_pair_7b_spark_judging",
+  "date": "2026-10-28",
+  "judge": {
+    "provider": "meta-model-api",
+    "model": "muse-spark-1.3",
+    "usage": {
+      "completion_tokens": 12889,
+      "prompt_tokens": 1559,
+      "total_tokens": 14448,
+      "completion_tokens_details": {
+        "reasoning_tokens": 12142
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "wall_s": 66.2
+  },
+  "sources_judged": [
+    "results/fifth_pair_stage2.json",
+    "results/fifth_pair_heldout96.json",
+    "results/fifth_pair_check1.json",
+    "results/fifth_pair_precompute.json",
+    "results/fifth_pair_template_diagnostic.json",
+    "results/fifth_pair_product_check.json",
+    "results/fifth_pair_recompute.json"
+  ],
+  "claims": [
+    {
+      "claim_id": "A",
+      "claim": "Model pair and scale: Qwen/Qwen2.5-7B + Qwen/Qwen2.5-7B-Instruct, 198 delta matrices; embedding and lm_head are separate (152064x3584) matrices (tie_word_embeddings=false); the full delta in fp16 is 15230566400 bytes. Source: results/fifth_pair_stage2.json."
+    },
+    {
+      "claim_id": "B",
+      "claim": "Byte budget: uniform rank-32 on the real shapes costs 86499328 bytes (about 176x smaller than the full delta). All five Spark-generated recipes priced inside budget on real shapes; the winner down_king costs 86401024 bytes. Sources: results/fifth_pair_check1.json, results/fifth_pair_stage2.json, results/fifth_pair_build_variant.json."
+    },
+    {
+      "claim_id": "C",
+      "claim": "Streamed randomized-SVD precompute over all 198 delta matrices: verdict PASS, 351.14 s of a 1800 s budget, peak RSS 7501.6 MB. Source: results/fifth_pair_precompute.json."
+    },
+    {
+      "claim_id": "D",
+      "claim": "Build validation: 2144 factor files across the six configs (counted in the Flash stage2 workdir); graft check (base + full delta == instruct) max abs diff 5.82e-11; the applied factored delta matches factored.quantize_delta's product to 5.40e-11 max over sampled (matrix, rank) pairs (factor-level diffs reach 1.85e-09 from singular-vector rotation under clustered singular values; the product is the gate). Sources: results/fifth_pair_stage2.json, results/fifth_pair_product_check.json."
+    },
+    {
+      "claim_id": "E",
+      "claim": "Stage 2 on the 24 Signet items (mean target logprob, higher is better): down_king -9.5837 (first-token accuracy 0.333), o_proj_sentinel -9.629, vocab_titans -11.2036, gate_up_monolith -13.7784, uniform_rank32 -14.4748, kv_zero_expansion -14.9005. down_king is the winner and is byte-fair. down_king's accuracy 0.333 is the highest of ALL configs on the 24, including the full delta (0.292). Source: results/fifth_pair_stage2.json."
+    },
+    {
+      "claim_id": "F",
+      "claim": "Reference inversion (the honest complication): on the Signet 24 the full delta scores -17.7691 overall, BELOW the base model's -7.2632, so gap_closed is reported as null for every config on this pair (no recovery fraction). Mechanism, verified by a template diagnostic: under the chat template the instruct model puts probability 0.999998 on the token 'The' after 'The capital of Japan is' and only 1.93e-08 on the target continuation; rescored as raw completion (no template), the full delta beats base on knowledge (-1.325 vs -1.462) and instruction (-2.678 vs -4.127). The battery's completion-style targets measure chat-format behavior at 7B, not delta quality. Source: results/fifth_pair_template_diagnostic.json."
+    },
+    {
+      "claim_id": "G",
+      "claim": "Held-out 96 questions: base -6.9158 (accuracy 0.073), full delta -15.9741 (accuracy 0.312), down_king -8.6939 (accuracy 0.344), uniform_rank32 -13.1583 (accuracy 0.323). down_king beats uniform by 4.464 nats at 98304 fewer bytes, and has the highest first-token accuracy of all configs; gap_closed is null again (full delta below base). Source: results/fifth_pair_heldout96.json."
+    },
+    {
+      "claim_id": "H",
+      "claim": "Plain 1-bit baseline at 7B (BitDelta-style initialization only, no training): priced 951911192 bytes (11.0x the factored budget) and scored -11.3776 (accuracy 0.312) on the 96, worse than the 86 MB down_king patch. Source: results/fifth_pair_heldout96.json."
+    },
+    {
+      "claim_id": "I",
+      "claim": "Memory: the streamed evals peak at about 2.2-2.35 GB RSS; the factor build peaked at 8349.5 MB; the 7B model (about 30 GB in fp32) was never held whole in memory on the 11 GB machine. Sources: eval records in results/fifth_pair_stage2.json and results/fifth_pair_heldout96.json; results/fifth_pair_build_summary.json."
+    },
+    {
+      "claim_id": "J",
+      "claim": "Independent script recomputation of every score, bucket, subset, ranking, byte price and gap null in both results files, from the per-item rows and the architecture constants: 78 of 78 checks pass. Source: results/fifth_pair_recompute.json."
+    },
+    {
+      "claim_id": "K",
+      "claim": "AirLLM library feasibility (lyogavin/airllm, Apache 2.0; concept credited in NOTICE.md; our runtime is our own NumPy implementation): CPU-only install was quick and clean (venv about 1.4 GB, torch 2.15.0+cpu, transformers 5.21.0); import works and CUDA is correctly reported unavailable. from_pretrained split the base model into per-layer shards and built the empty Qwen2 model, then FAILED at load after 95.1 s with 'AssertionError: Torch not compiled with CUDA enabled': the library's load path requires CUDA, so the real AirLLM cannot load the 7B base model on this CPU-only box without patching the library. Time-boxed and not pursued; all streaming numbers come from our own NumPy runtime, labeled AirLLM-style."
+    },
+    {
+      "claim_id": "L",
+      "claim": "Streamed generation demo (greedy, no KV cache, both configs streamed block by block; peak RSS 4295.7 MB; 10 steps, first token after 267.18 s, per-step times [267.18, 252.71, 287.82]... s for 6 streams at once): prompt 1: base -> 'There are 366 days in a leap' | patched -> '366_Pods'; prompt 2: base -> 'To find 15% of 20' | patched -> '30'; prompt 3: base -> 'Tokyo' | patched -> 'TokyoprintStats'. Source: results/fifth_pair_stream_demo_transcript.txt."
+    }
+  ],
+  "prompt": "You are the independent judge for a model-compression benchmark result (the fifth pair, Qwen2.5-7B scale, of the Fraction Compressor project). For each claim below, decide whether the claim is SUPPORTED by the numbers it cites: check the arithmetic (differences, ratios, orderings), check that the wording does not overstate what the numbers show, and pay special attention to Claim F and G: the authors report gap_closed as null because the full-delta reference scores below the base model on these completion-style probe sets; judge whether that null reporting and the raw-logprob framing are the honest choice, and whether the template-artifact explanation is consistent with the diagnostic numbers given. Reply with a single JSON object and nothing else: {\"verdicts\": [{\"claim_id\": \"A\", \"verdict\": \"SUPPORTED\" or \"NOT SUPPORTED\", \"reason\": \"one or two sentences\"}], \"headline_answer\": \"one sentence: what is the honest headline of this 7B result?\", \"concerns\": \"any overclaim, inconsistency, or missing caveat you found, or 'none'\"}.\n\nClaim A: Model pair and scale: Qwen/Qwen2.5-7B + Qwen/Qwen2.5-7B-Instruct, 198 delta matrices; embedding and lm_head are separate (152064x3584) matrices (tie_word_embeddings=false); the full delta in fp16 is 15230566400 bytes. Source: results/fifth_pair_stage2.json.\nClaim B: Byte budget: uniform rank-32 on the real shapes costs 86499328 bytes (about 176x smaller than the full delta). All five Spark-generated recipes priced inside budget on real shapes; the winner down_king costs 86401024 bytes. Sources: results/fifth_pair_check1.json, results/fifth_pair_stage2.json, results/fifth_pair_build_variant.json.\nClaim C: Streamed randomized-SVD precompute over all 198 delta matrices: verdict PASS, 351.14 s of a 1800 s budget, peak RSS 7501.6 MB. Source: results/fifth_pair_precompute.json.\nClaim D: Build validation: 2144 factor files across the six configs (counted in the Flash stage2 workdir); graft check (base + full delta == instruct) max abs diff 5.82e-11; the applied factored delta matches factored.quantize_delta's product to 5.40e-11 max over sampled (matrix, rank) pairs (factor-level diffs reach 1.85e-09 from singular-vector rotation under clustered singular values; the product is the gate). Sources: results/fifth_pair_stage2.json, results/fifth_pair_product_check.json.\nClaim E: Stage 2 on the 24 Signet items (mean target logprob, higher is better): down_king -9.5837 (first-token accuracy 0.333), o_proj_sentinel -9.629, vocab_titans -11.2036, gate_up_monolith -13.7784, uniform_rank32 -14.4748, kv_zero_expansion -14.9005. down_king is the winner and is byte-fair. down_king's accuracy 0.333 is the highest of ALL configs on the 24, including the full delta (0.292). Source: results/fifth_pair_stage2.json.\nClaim F: Reference inversion (the honest complication): on the Signet 24 the full delta scores -17.7691 overall, BELOW the base model's -7.2632, so gap_closed is reported as null for every config on this pair (no recovery fraction). Mechanism, verified by a template diagnostic: under the chat template the instruct model puts probability 0.999998 on the token 'The' after 'The capital of Japan is' and only 1.93e-08 on the target continuation; rescored as raw completion (no template), the full delta beats base on knowledge (-1.325 vs -1.462) and instruction (-2.678 vs -4.127). The battery's completion-style targets measure chat-format behavior at 7B, not delta quality. Source: results/fifth_pair_template_diagnostic.json.\nClaim G: Held-out 96 questions: base -6.9158 (accuracy 0.073), full delta -15.9741 (accuracy 0.312), down_king -8.6939 (accuracy 0.344), uniform_rank32 -13.1583 (accuracy 0.323). down_king beats uniform by 4.464 nats at 98304 fewer bytes, and has the highest first-token accuracy of all configs; gap_closed is null again (full delta below base). Source: results/fifth_pair_heldout96.json.\nClaim H: Plain 1-bit baseline at 7B (BitDelta-style initialization only, no training): priced 951911192 bytes (11.0x the factored budget) and scored -11.3776 (accuracy 0.312) on the 96, worse than the 86 MB down_king patch. Source: results/fifth_pair_heldout96.json.\nClaim I: Memory: the streamed evals peak at about 2.2-2.35 GB RSS; the factor build peaked at 8349.5 MB; the 7B model (about 30 GB in fp32) was never held whole in memory on the 11 GB machine. Sources: eval records in results/fifth_pair_stage2.json and results/fifth_pair_heldout96.json; results/fifth_pair_build_summary.json.\nClaim J: Independent script recomputation of every score, bucket, subset, ranking, byte price and gap null in both results files, from the per-item rows and the architecture constants: 78 of 78 checks pass. Source: results/fifth_pair_recompute.json.\nClaim K: AirLLM library feasibility (lyogavin/airllm, Apache 2.0; concept credited in NOTICE.md; our runtime is our own NumPy implementation): CPU-only install was quick and clean (venv about 1.4 GB, torch 2.15.0+cpu, transformers 5.21.0); import works and CUDA is correctly reported unavailable. from_pretrained split the base model into per-layer shards and built the empty Qwen2 model, then FAILED at load after 95.1 s with 'AssertionError: Torch not compiled with CUDA enabled': the library's load path requires CUDA, so the real AirLLM cannot load the 7B base model on this CPU-only box without patching the library. Time-boxed and not pursued; all streaming numbers come from our own NumPy runtime, labeled AirLLM-style.\nClaim L: Streamed generation demo (greedy, no KV cache, both configs streamed block by block; peak RSS 4295.7 MB; 10 steps, first token after 267.18 s, per-step times [267.18, 252.71, 287.82]... s for 6 streams at once): prompt 1: base -> 'There are 366 days in a leap' | patched -> '366_Pods'; prompt 2: base -> 'To find 15% of 20' | patched -> '30'; prompt 3: base -> 'Tokyo' | patched -> 'TokyoprintStats'. Source: results/fifth_pair_stream_demo_transcript.txt.",
+  "verdicts": [
+    {
+      "claim_id": "A",
+      "verdict": "SUPPORTED",
+      "reason": "28*7+2=198 matrices, vocab shapes match tie_word_embeddings=false, and 15230566400/2=7615283200 params matches ~7.6B scale."
+    },
+    {
+      "claim_id": "B",
+      "verdict": "SUPPORTED",
+      "reason": "15230566400/86499328=176.1x, and winner 86401024 is 98304 bytes under the 86499328 budget."
+    },
+    {
+      "claim_id": "C",
+      "verdict": "SUPPORTED",
+      "reason": "Reports 351.14s <1800s PASS with 7501.6MB peak; no arithmetic or ordering violation."
+    },
+    {
+      "claim_id": "D",
+      "verdict": "SUPPORTED",
+      "reason": "5.82e-11 and 5.40e-11 are fp-rounding level, and product-gate with 1.85e-09 factor rotation from clustered singular values is coherent."
+    },
+    {
+      "claim_id": "E",
+      "verdict": "SUPPORTED",
+      "reason": "-9.5837 > -9.629 > -11.2036 > -13.7784 > -14.4748 > -14.9005 so down_king wins byte-fair, accuracy 0.333=8/24 beats full 0.292=7/24."
+    },
+    {
+      "claim_id": "F",
+      "verdict": "SUPPORTED",
+      "reason": "Full -17.7691 < base -7.2632 so gap denominator negative and null is honest; ln(1.93e-08)=-17.76 matches full mean and raw-completion reversal supports template-artifact explanation."
+    },
+    {
+      "claim_id": "G",
+      "verdict": "SUPPORTED",
+      "reason": "-8.6939-(-13.1583)=4.464 nats and 86499328-86401024=98304 bytes correct, and full -15.9741 < base -6.9158 so null gap is honest."
+    },
+    {
+      "claim_id": "H",
+      "verdict": "SUPPORTED",
+      "reason": "951911192/86499328=11.01x ~11.0x, and -11.3776 < -8.6939 with 0.312 < 0.344 so worse than down_king."
+    },
+    {
+      "claim_id": "I",
+      "verdict": "SUPPORTED",
+      "reason": "2.2-2.35GB and 8349.5MB peaks are <11GB, and 7.6B*4~30GB supports never-held-whole claim."
+    },
+    {
+      "claim_id": "J",
+      "verdict": "SUPPORTED",
+      "reason": "78/78 recomputation pass claim has no internal arithmetic contradiction."
+    },
+    {
+      "claim_id": "K",
+      "verdict": "SUPPORTED",
+      "reason": "CUDA assertion after sharding supports CPU-only incompatibility conclusion with clear NumPy-runtime attribution."
+    },
+    {
+      "claim_id": "L",
+      "verdict": "SUPPORTED",
+      "reason": "Transcript is reported without success overclaim, with timing/RSS and degenerate patched strings disclosed as-is."
+    }
+  ],
+  "headline_answer": "At 7B down_king beats uniform rank-32 by ~4.5 nats within budget but still trails base on mean logprob with full delta inverted by chat-template mismatch, so gap_closed is undefined.",
+  "concerns": "none",
+  "raw_reply": "{\"verdicts\": [{\"claim_id\": \"A\", \"verdict\": \"SUPPORTED\", \"reason\": \"28*7+2=198 matrices, vocab shapes match tie_word_embeddings=false, and 15230566400/2=7615283200 params matches ~7.6B scale.\"}, {\"claim_id\": \"B\", \"verdict\": \"SUPPORTED\", \"reason\": \"15230566400/86499328=176.1x, and winner 86401024 is 98304 bytes under the 86499328 budget.\"}, {\"claim_id\": \"C\", \"verdict\": \"SUPPORTED\", \"reason\": \"Reports 351.14s <1800s PASS with 7501.6MB peak; no arithmetic or ordering violation.\"}, {\"claim_id\": \"D\", \"verdict\": \"SUPPORTED\", \"reason\": \"5.82e-11 and 5.40e-11 are fp-rounding level, and product-gate with 1.85e-09 factor rotation from clustered singular values is coherent.\"}, {\"claim_id\": \"E\", \"verdict\": \"SUPPORTED\", \"reason\": \"-9.5837 > -9.629 > -11.2036 > -13.7784 > -14.4748 > -14.9005 so down_king wins byte-fair, accuracy 0.333=8/24 beats full 0.292=7/24.\"}, {\"claim_id\": \"F\", \"verdict\": \"SUPPORTED\", \"reason\": \"Full -17.7691 < base -7.2632 so gap denominator negative and null is honest; ln(1.93e-08)=-17.76 matches full mean and raw-completion reversal supports template-artifact explanation.\"}, {\"claim_id\": \"G\", \"verdict\": \"SUPPORTED\", \"reason\": \"-8.6939-(-13.1583)=4.464 nats and 86499328-86401024=98304 bytes correct, and full -15.9741 < base -6.9158 so null gap is honest.\"}, {\"claim_id\": \"H\", \"verdict\": \"SUPPORTED\", \"reason\": \"951911192/86499328=11.01x ~11.0x, and -11.3776 < -8.6939 with 0.312 < 0.344 so worse than down_king.\"}, {\"claim_id\": \"I\", \"verdict\": \"SUPPORTED\", \"reason\": \"2.2-2.35GB and 8349.5MB peaks are <11GB, and 7.6B*4~30GB supports never-held-whole claim.\"}, {\"claim_id\": \"J\", \"verdict\": \"SUPPORTED\", \"reason\": \"78/78 recomputation pass claim has no internal arithmetic contradiction.\"}, {\"claim_id\": \"K\", \"verdict\": \"SUPPORTED\", \"reason\": \"CUDA assertion after sharding supports CPU-only incompatibility conclusion with clear NumPy-runtime attribution.\"}, {\"claim_id\": \"L\", \"verdict\": \"SUPPORTED\", \"reason\": \"Transcript is reported without success overclaim, with timing/RSS and degenerate patched strings disclosed as-is.\"}], \"headline_answer\": \"At 7B down_king beats uniform rank-32 by ~4.5 nats within budget but still trails base on mean logprob with full delta inverted by chat-template mismatch, so gap_closed is undefined.\", \"concerns\": \"none\"}"
+}

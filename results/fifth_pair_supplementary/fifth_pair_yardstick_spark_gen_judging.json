@@ -1,0 +1,550 @@
+{
+  "task": "fifth_pair_yardstick_spark_gen_judging",
+  "date": "2026-10-29T13:16:32Z",
+  "judge": {
+    "provider": "meta-model-api",
+    "model": "muse-spark-1.3",
+    "usage": {
+      "completion_tokens": 3303,
+      "prompt_tokens": 2099,
+      "total_tokens": 5402,
+      "completion_tokens_details": {
+        "reasoning_tokens": 2574
+      },
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      }
+    },
+    "wall_s": 12.3
+  },
+  "n_generations": 36,
+  "judgments": [
+    {
+      "index": 0,
+      "pass": true,
+      "reason": "contains Canberra, correct"
+    },
+    {
+      "index": 1,
+      "pass": true,
+      "reason": "contains carbon dioxide and CO2"
+    },
+    {
+      "index": 2,
+      "pass": true,
+      "reason": "answers 6 correctly"
+    },
+    {
+      "index": 3,
+      "pass": true,
+      "reason": "answers Jane Austen"
+    },
+    {
+      "index": 4,
+      "pass": true,
+      "reason": "exactly cold"
+    },
+    {
+      "index": 5,
+      "pass": false,
+      "reason": "wrong reversal, not enihsnus"
+    },
+    {
+      "index": 6,
+      "pass": false,
+      "reason": "extra preamble, not just three items"
+    },
+    {
+      "index": 7,
+      "pass": false,
+      "reason": "8 words, not exactly five"
+    },
+    {
+      "index": 8,
+      "pass": true,
+      "reason": "correct 28"
+    },
+    {
+      "index": 9,
+      "pass": true,
+      "reason": "correctly answers 37"
+    },
+    {
+      "index": 10,
+      "pass": true,
+      "reason": "correct 42"
+    },
+    {
+      "index": 11,
+      "pass": true,
+      "reason": "correctly answers 5"
+    },
+    {
+      "index": 12,
+      "pass": true,
+      "reason": "exactly Canberra"
+    },
+    {
+      "index": 13,
+      "pass": true,
+      "reason": "answers Carbon dioxide"
+    },
+    {
+      "index": 14,
+      "pass": true,
+      "reason": "exactly 6"
+    },
+    {
+      "index": 15,
+      "pass": true,
+      "reason": "answers Jane Austen"
+    },
+    {
+      "index": 16,
+      "pass": true,
+      "reason": "exactly cold"
+    },
+    {
+      "index": 17,
+      "pass": false,
+      "reason": "enyznes is incorrect"
+    },
+    {
+      "index": 18,
+      "pass": true,
+      "reason": "exactly three flying animals"
+    },
+    {
+      "index": 19,
+      "pass": true,
+      "reason": "exactly five words"
+    },
+    {
+      "index": 20,
+      "pass": true,
+      "reason": "correct 28"
+    },
+    {
+      "index": 21,
+      "pass": true,
+      "reason": "correct 37"
+    },
+    {
+      "index": 22,
+      "pass": true,
+      "reason": "correct 42"
+    },
+    {
+      "index": 23,
+      "pass": true,
+      "reason": "correct 5"
+    },
+    {
+      "index": 24,
+      "pass": true,
+      "reason": "contains Canberra"
+    },
+    {
+      "index": 25,
+      "pass": true,
+      "reason": "contains Carbon dioxide"
+    },
+    {
+      "index": 26,
+      "pass": true,
+      "reason": "answers 6 despite suffix"
+    },
+    {
+      "index": 27,
+      "pass": true,
+      "reason": "contains Jane Austen"
+    },
+    {
+      "index": 28,
+      "pass": false,
+      "reason": "extra text, not exactly cold"
+    },
+    {
+      "index": 29,
+      "pass": false,
+      "reason": "wrong reversal"
+    },
+    {
+      "index": 30,
+      "pass": false,
+      "reason": "extra suffix violates exact format"
+    },
+    {
+      "index": 31,
+      "pass": false,
+      "reason": "extra text beyond five words"
+    },
+    {
+      "index": 32,
+      "pass": true,
+      "reason": "answers 28"
+    },
+    {
+      "index": 33,
+      "pass": true,
+      "reason": "answers 37"
+    },
+    {
+      "index": 34,
+      "pass": true,
+      "reason": "correct 42"
+    },
+    {
+      "index": 35,
+      "pass": true,
+      "reason": "correct 5"
+    }
+  ],
+  "rows": [
+    {
+      "config": "base",
+      "prompt_index": 0,
+      "bucket": "knowledge",
+      "prompt": "What is the capital city of Australia? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "canberra"
+      ],
+      "text": "The capital city of Australia is Canberra."
+    },
+    {
+      "config": "base",
+      "prompt_index": 1,
+      "bucket": "knowledge",
+      "prompt": "Which gas do plants absorb from the air for photosynthesis? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "carbon dioxide",
+        "co2"
+      ],
+      "text": "Plants absorb carbon dioxide (CO2) from the air for photosynthesis."
+    },
+    {
+      "config": "base",
+      "prompt_index": 2,
+      "bucket": "knowledge",
+      "prompt": "How many sides does a hexagon have? Answer with just the number.",
+      "kind": "number",
+      "expect": 6,
+      "text": "A hexagon has 6 sides."
+    },
+    {
+      "config": "base",
+      "prompt_index": 3,
+      "bucket": "knowledge",
+      "prompt": "Who wrote the novel Pride and Prejudice? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "austen"
+      ],
+      "text": "The novel \"Pride and Prejudice\" was written by Jane Austen."
+    },
+    {
+      "config": "base",
+      "prompt_index": 4,
+      "bucket": "instruction",
+      "prompt": "Reply with exactly one word: the opposite of 'hot'.",
+      "kind": "exact_word",
+      "expect": "cold",
+      "text": "cold"
+    },
+    {
+      "config": "base",
+      "prompt_index": 5,
+      "bucket": "instruction",
+      "prompt": "Write the word 'sunshine' spelled backwards and nothing else.",
+      "kind": "reverse",
+      "expect": "enihsnus",
+      "text": "neihcnuS"
+    },
+    {
+      "config": "base",
+      "prompt_index": 6,
+      "bucket": "instruction",
+      "prompt": "List exactly three animals that can fly, separated by commas.",
+      "kind": "three_items",
+      "expect": null,
+      "text": "Sure, here are three animals that can fly: birds, bats, and insects."
+    },
+    {
+      "config": "base",
+      "prompt_index": 7,
+      "bucket": "instruction",
+      "prompt": "Answer using exactly five words: why is the sky blue?",
+      "kind": "five_words",
+      "expect": null,
+      "text": "The sky appears blue due to Rayleigh scattering."
+    },
+    {
+      "config": "base",
+      "prompt_index": 8,
+      "bucket": "math",
+      "prompt": "What is 45 minus 17? Answer with just the number.",
+      "kind": "number",
+      "expect": 28,
+      "text": "28"
+    },
+    {
+      "config": "base",
+      "prompt_index": 9,
+      "bucket": "math",
+      "prompt": "You buy a toy for 13 dollars and pay with a 50 dollar bill. How much change do you get in dollars? Answer with just the number.",
+      "kind": "number",
+      "expect": 37,
+      "text": "To calculate the change, subtract the cost of the toy from the amount paid:\n\nChange = Amount Paid - Cost of Toy\nChange = $50 - $13\nChange = $37"
+    },
+    {
+      "config": "base",
+      "prompt_index": 10,
+      "bucket": "math",
+      "prompt": "What is 6 * 7? Answer with just the number.",
+      "kind": "number",
+      "expect": 42,
+      "text": "42"
+    },
+    {
+      "config": "base",
+      "prompt_index": 11,
+      "bucket": "math",
+      "prompt": "A pizza is cut into 8 slices and you eat 3 slices. How many slices remain? Answer with just the number.",
+      "kind": "number",
+      "expect": 5,
+      "text": "To find out how many slices remain, subtract the number of slices eaten from the total number of slices:\n\n8 slices (total) - 3 slices (eaten) = 5 slices remaining\n\n"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 0,
+      "bucket": "knowledge",
+      "prompt": "What is the capital city of Australia? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "canberra"
+      ],
+      "text": "Canberra"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 1,
+      "bucket": "knowledge",
+      "prompt": "Which gas do plants absorb from the air for photosynthesis? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "carbon dioxide",
+        "co2"
+      ],
+      "text": "Carbon dioxide"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 2,
+      "bucket": "knowledge",
+      "prompt": "How many sides does a hexagon have? Answer with just the number.",
+      "kind": "number",
+      "expect": 6,
+      "text": "6"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 3,
+      "bucket": "knowledge",
+      "prompt": "Who wrote the novel Pride and Prejudice? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "austen"
+      ],
+      "text": "Jane Austen"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 4,
+      "bucket": "instruction",
+      "prompt": "Reply with exactly one word: the opposite of 'hot'.",
+      "kind": "exact_word",
+      "expect": "cold",
+      "text": "cold"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 5,
+      "bucket": "instruction",
+      "prompt": "Write the word 'sunshine' spelled backwards and nothing else.",
+      "kind": "reverse",
+      "expect": "enihsnus",
+      "text": "enyznes"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 6,
+      "bucket": "instruction",
+      "prompt": "List exactly three animals that can fly, separated by commas.",
+      "kind": "three_items",
+      "expect": null,
+      "text": "birds, bats, insects"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 7,
+      "bucket": "instruction",
+      "prompt": "Answer using exactly five words: why is the sky blue?",
+      "kind": "five_words",
+      "expect": null,
+      "text": "Sunlight scatters in the atmosphere."
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 8,
+      "bucket": "math",
+      "prompt": "What is 45 minus 17? Answer with just the number.",
+      "kind": "number",
+      "expect": 28,
+      "text": "28"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 9,
+      "bucket": "math",
+      "prompt": "You buy a toy for 13 dollars and pay with a 50 dollar bill. How much change do you get in dollars? Answer with just the number.",
+      "kind": "number",
+      "expect": 37,
+      "text": "37"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 10,
+      "bucket": "math",
+      "prompt": "What is 6 * 7? Answer with just the number.",
+      "kind": "number",
+      "expect": 42,
+      "text": "42"
+    },
+    {
+      "config": "full_delta",
+      "prompt_index": 11,
+      "bucket": "math",
+      "prompt": "A pizza is cut into 8 slices and you eat 3 slices. How many slices remain? Answer with just the number.",
+      "kind": "number",
+      "expect": 5,
+      "text": "5"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 0,
+      "bucket": "knowledge",
+      "prompt": "What is the capital city of Australia? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "canberra"
+      ],
+      "text": "Canberra\u65b0\u4eba\u73a9\u5bb6"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 1,
+      "bucket": "knowledge",
+      "prompt": "Which gas do plants absorb from the air for photosynthesis? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "carbon dioxide",
+        "co2"
+      ],
+      "text": "Carbon dioxide (CO2)NdEx"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 2,
+      "bucket": "knowledge",
+      "prompt": "How many sides does a hexagon have? Answer with just the number.",
+      "kind": "number",
+      "expect": 6,
+      "text": "6_Pods"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 3,
+      "bucket": "knowledge",
+      "prompt": "Who wrote the novel Pride and Prejudice? Answer with just the name.",
+      "kind": "keyword",
+      "expect": [
+        "austen"
+      ],
+      "text": "Jane Austen.UrlParser"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 4,
+      "bucket": "instruction",
+      "prompt": "Reply with exactly one word: the opposite of 'hot'.",
+      "kind": "exact_word",
+      "expect": "cold",
+      "text": "Cold.\u5373\u65f6\u53d1\u751f\u60a8\u7684\u9700\u6c42\uff0c\u6211\u4f1a\u5c3d\u529b\u63d0\u4f9b\u5e2e\u52a9\u3002\u5982\u679c\u60a8\u6709\u5176\u4ed6\u95ee\u9898\u6216\u9700\u8981\u66f4\u591a\u4fe1\u606f\uff0c\u8bf7\u544a\u8bc9\u6211\uff01"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 5,
+      "bucket": "instruction",
+      "prompt": "Write the word 'sunshine' spelled backwards and nothing else.",
+      "kind": "reverse",
+      "expect": "enihsnus",
+      "text": "neihhsun"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 6,
+      "bucket": "instruction",
+      "prompt": "List exactly three animals that can fly, separated by commas.",
+      "kind": "three_items",
+      "expect": null,
+      "text": "Bats, butterflies, hummingbirds._Pods"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 7,
+      "bucket": "instruction",
+      "prompt": "Answer using exactly five words: why is the sky blue?",
+      "kind": "five_words",
+      "expect": null,
+      "text": "Sunlight scatters in the atmosphere.FilterWhere: concise, five words.UsageId: conversational AI.UsageId: Simplified Explanation.UsageId: Educational/Instructional.UsageId: General Knowledge.UsageId:"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 8,
+      "bucket": "math",
+      "prompt": "What is 45 minus 17? Answer with just the number.",
+      "kind": "number",
+      "expect": 28,
+      "text": "28\u6e38\u620f\u526f\u672c"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 9,
+      "bucket": "math",
+      "prompt": "You buy a toy for 13 dollars and pay with a 50 dollar bill. How much change do you get in dollars? Answer with just the number.",
+      "kind": "number",
+      "expect": 37,
+      "text": "37 d\u00f3la"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 10,
+      "bucket": "math",
+      "prompt": "What is 6 * 7? Answer with just the number.",
+      "kind": "number",
+      "expect": 42,
+      "text": "42"
+    },
+    {
+      "config": "down_king",
+      "prompt_index": 11,
+      "bucket": "math",
+      "prompt": "A pizza is cut into 8 slices and you eat 3 slices. How many slices remain? Answer with just the number.",
+      "kind": "number",
+      "expect": 5,
+      "text": "5"
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+{
+  "pair": "Qwen2.5-7B + Qwen2.5-7B-Instruct (fifth pair)",
+  "checks_run": 78,
+  "checks_failed": 0,
+  "checks": [
+    {
+      "check": "stage2 eval internal base",
+      "pass": true,
+      "detail": "recomputed lp -7.263199 vs file -7.263199"
+    },
+    {
+      "check": "stage2 eval internal base/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -7.988778 vs file -7.988778"
+    },
+    {
+      "check": "stage2 eval internal base/instruction",
+      "pass": true,
+      "detail": "recomputed lp -10.477565 vs file -10.477565"
+    },
+    {
+      "check": "stage2 eval internal base/math",
+      "pass": true,
+      "detail": "recomputed lp -3.323255 vs file -3.323255"
+    },
+    {
+      "check": "stage2 eval internal full_delta",
+      "pass": true,
+      "detail": "recomputed lp -17.769127 vs file -17.769127"
+    },
+    {
+      "check": "stage2 eval internal full_delta/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -22.781112 vs file -22.781112"
+    },
+    {
+      "check": "stage2 eval internal full_delta/instruction",
+      "pass": true,
+      "detail": "recomputed lp -29.713482 vs file -29.713482"
+    },
+    {
+      "check": "stage2 eval internal full_delta/math",
+      "pass": true,
+      "detail": "recomputed lp -0.812789 vs file -0.812789"
+    },
+    {
+      "check": "stage2 eval internal uniform_rank32",
+      "pass": true,
+      "detail": "recomputed lp -14.474833 vs file -14.474833"
+    },
+    {
+      "check": "stage2 eval internal uniform_rank32/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.635042 vs file -12.635042"
+    },
+    {
+      "check": "stage2 eval internal uniform_rank32/instruction",
+      "pass": true,
+      "detail": "recomputed lp -28.412661 vs file -28.412661"
+    },
+    {
+      "check": "stage2 eval internal uniform_rank32/math",
+      "pass": true,
+      "detail": "recomputed lp -2.376796 vs file -2.376796"
+    },
+    {
+      "check": "stage2 eval internal gate_up_monolith",
+      "pass": true,
+      "detail": "recomputed lp -13.778357 vs file -13.778357"
+    },
+    {
+      "check": "stage2 eval internal gate_up_monolith/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.728516 vs file -12.728516"
+    },
+    {
+      "check": "stage2 eval internal gate_up_monolith/instruction",
+      "pass": true,
+      "detail": "recomputed lp -26.618850 vs file -26.618850"
+    },
+    {
+      "check": "stage2 eval internal gate_up_monolith/math",
+      "pass": true,
+      "detail": "recomputed lp -1.987706 vs file -1.987706"
+    },
+    {
+      "check": "stage2 eval internal vocab_titans",
+      "pass": true,
+      "detail": "recomputed lp -11.203592 vs file -11.203592"
+    },
+    {
+      "check": "stage2 eval internal vocab_titans/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.252057 vs file -12.252057"
+    },
+    {
+      "check": "stage2 eval internal vocab_titans/instruction",
+      "pass": true,
+      "detail": "recomputed lp -20.218166 vs file -20.218166"
+    },
+    {
+      "check": "stage2 eval internal vocab_titans/math",
+      "pass": true,
+      "detail": "recomputed lp -1.140551 vs file -1.140551"
+    },
+    {
+      "check": "stage2 eval internal o_proj_sentinel",
+      "pass": true,
+      "detail": "recomputed lp -9.628955 vs file -9.628955"
+    },
+    {
+      "check": "stage2 eval internal o_proj_sentinel/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.631736 vs file -12.631736"
+    },
+    {
+      "check": "stage2 eval internal o_proj_sentinel/instruction",
+      "pass": true,
+      "detail": "recomputed lp -16.127263 vs file -16.127263"
+    },
+    {
+      "check": "stage2 eval internal o_proj_sentinel/math",
+      "pass": true,
+      "detail": "recomputed lp -0.127865 vs file -0.127865"
+    },
+    {
+      "check": "stage2 eval internal kv_zero_expansion",
+      "pass": true,
+      "detail": "recomputed lp -14.900506 vs file -14.900506"
+    },
+    {
+      "check": "stage2 eval internal kv_zero_expansion/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.224967 vs file -12.224967"
+    },
+    {
+      "check": "stage2 eval internal kv_zero_expansion/instruction",
+      "pass": true,
+      "detail": "recomputed lp -29.668317 vs file -29.668317"
+    },
+    {
+      "check": "stage2 eval internal kv_zero_expansion/math",
+      "pass": true,
+      "detail": "recomputed lp -2.808233 vs file -2.808233"
+    },
+    {
+      "check": "stage2 eval internal down_king",
+      "pass": true,
+      "detail": "recomputed lp -9.583665 vs file -9.583665"
+    },
+    {
+      "check": "stage2 eval internal down_king/knowledge",
+      "pass": true,
+      "detail": "recomputed lp -12.361690 vs file -12.361690"
+    },
+    {
+      "check": "stage2 eval internal down_king/instruction",
+      "pass": true,
+      "detail": "recomputed lp -16.304359 vs file -16.304359"
+    },
+    {
+      "check": "stage2 eval internal down_king/math",
+      "pass": true,
+      "detail": "recomputed lp -0.084945 vs file -0.084945"
+    },
+    {
+      "check": "stage2 assembled base",
+      "pass": true,
+      "detail": "recomputed lp -7.263199 vs file -7.263199"
+    },
+    {
+      "check": "stage2 assembled full",
+      "pass": true,
+      "detail": "recomputed lp -17.769127 vs file -17.769127"
+    },
+    {
+      "check": "stage2 assembled o_proj_sentinel",
+      "pass": true,
+      "detail": "recomputed lp -9.628955 vs file -9.628955"
+    },
+    {
+      "check": "stage2 assembled vocab_titans",
+      "pass": true,
+      "detail": "recomputed lp -11.203592 vs file -11.203592"
+    },
+    {
+      "check": "stage2 assembled gate_up_monolith",
+      "pass": true,
+      "detail": "recomputed lp -13.778357 vs file -13.778357"
+    },
+    {
+      "check": "stage2 assembled down_king",
+      "pass": true,
+      "detail": "recomputed lp -9.583665 vs file -9.583665"
+    },
+    {
+      "check": "stage2 assembled kv_zero_expansion",
+      "pass": true,
+      "detail": "recomputed lp -14.900506 vs file -14.900506"
+    },
+    {
+      "check": "stage2 assembled uniform_rank32",
+      "pass": true,
+      "detail": "recomputed lp -14.474833 vs file -14.474833"
+    },
+    {
+      "check": "stage2 ranking order",
+      "pass": true,
+      "detail": "recomputed: down_king -9.584, o_proj_sentinel -9.629, vocab_titans -11.204, gate_up_monolith -13.778, uniform_rank32 -14.475, kv_zero_expansion -14.901"
+    },
+    {
+      "check": "stage2 winner is down_king",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "stage2 full below base (gap null premise)",
+      "pass": true,
+      "detail": "full -17.769 < base -7.263"
+    },
+    {
+      "check": "stage2 all gap_closed null",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "heldout96 eval internal base",
+      "pass": true,
+      "detail": "recomputed lp -6.915776 vs file -6.915776"
+    },
+    {
+      "check": "heldout96 eval internal base/heldout24",
+      "pass": true,
+      "detail": "recomputed lp -4.474024 vs file -4.474024"
+    },
+    {
+      "check": "heldout96 eval internal base/heldout72_new",
+      "pass": true,
+      "detail": "recomputed lp -7.729693 vs file -7.729693"
+    },
+    {
+      "check": "heldout96 eval internal full_delta",
+      "pass": true,
+      "detail": "recomputed lp -15.974108 vs file -15.974108"
+    },
+    {
+      "check": "heldout96 eval internal full_delta/heldout24",
+      "pass": true,
+      "detail": "recomputed lp -13.556512 vs file -13.556512"
+    },
+    {
+      "check": "heldout96 eval internal full_delta/heldout72_new",
+      "pass": true,
+      "detail": "recomputed lp -16.779974 vs file -16.779974"
+    },
+    {
+      "check": "heldout96 eval internal uniform_rank32",
+      "pass": true,
+      "detail": "recomputed lp -13.158277 vs file -13.158277"
+    },
+    {
+      "check": "heldout96 eval internal uniform_rank32/heldout24",
+      "pass": true,
+      "detail": "recomputed lp -6.834783 vs file -6.834783"
+    },
+    {
+      "check": "heldout96 eval internal uniform_rank32/heldout72_new",
+      "pass": true,
+      "detail": "recomputed lp -15.266108 vs file -15.266108"
+    },
+    {
+      "check": "heldout96 eval internal down_king",
+      "pass": true,
+      "detail": "recomputed lp -8.693891 vs file -8.693891"
+    },
+    {
+      "check": "heldout96 eval internal down_king/heldout24",
+      "pass": true,
+      "detail": "recomputed lp -6.638839 vs file -6.638839"
+    },
+    {
+      "check": "heldout96 eval internal down_king/heldout72_new",
+      "pass": true,
+      "detail": "recomputed lp -9.378909 vs file -9.378909"
+    },
+    {
+      "check": "heldout96 eval internal bitdelta_init",
+      "pass": true,
+      "detail": "recomputed lp -11.377643 vs file -11.377643"
+    },
+    {
+      "check": "heldout96 eval internal bitdelta_init/heldout24",
+      "pass": true,
+      "detail": "recomputed lp -9.772931 vs file -9.772931"
+    },
+    {
+      "check": "heldout96 eval internal bitdelta_init/heldout72_new",
+      "pass": true,
+      "detail": "recomputed lp -11.912548 vs file -11.912548"
+    },
+    {
+      "check": "heldout96 assembled base",
+      "pass": true,
+      "detail": "recomputed lp -6.915776 vs file -6.915776"
+    },
+    {
+      "check": "heldout96 assembled full",
+      "pass": true,
+      "detail": "recomputed lp -15.974108 vs file -15.974108"
+    },
+    {
+      "check": "heldout96 assembled uniform_rank32",
+      "pass": true,
+      "detail": "recomputed lp -13.158277 vs file -13.158277"
+    },
+    {
+      "check": "heldout96 assembled down_king",
+      "pass": true,
+      "detail": "recomputed lp -8.693891 vs file -8.693891"
+    },
+    {
+      "check": "heldout96 assembled bitdelta",
+      "pass": true,
+      "detail": "recomputed lp -11.377643 vs file -11.377643"
+    },
+    {
+      "check": "heldout96 contender beats uniform",
+      "pass": true,
+      "detail": "down_king -8.6939 vs uniform -13.1583"
+    },
+    {
+      "check": "heldout96 full below base (gap null premise)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "heldout96 gap_closed nulls",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "uniform rank-32 budget recomputed",
+      "pass": true,
+      "detail": "86499328"
+    },
+    {
+      "check": "price o_proj_sentinel",
+      "pass": true,
+      "detail": "recomputed 85978112 vs file 85978112"
+    },
+    {
+      "check": "price vocab_titans",
+      "pass": true,
+      "detail": "recomputed 85787648 vs file 85787648"
+    },
+    {
+      "check": "price gate_up_monolith",
+      "pass": true,
+      "detail": "recomputed 85744640 vs file 85744640"
+    },
+    {
+      "check": "price down_king",
+      "pass": true,
+      "detail": "recomputed 86401024 vs file 86401024"
+    },
+    {
+      "check": "price kv_zero_expansion",
+      "pass": true,
+      "detail": "recomputed 86289408 vs file 86289408"
+    },
+    {
+      "check": "price uniform_rank32",
+      "pass": true,
+      "detail": "recomputed 86499328 vs file 86499328"
+    },
+    {
+      "check": "build_variant price matches",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "down_king within budget",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "bitdelta floor price recomputed",
+      "pass": true,
+      "detail": "951911192"
+    },
+    {
+      "check": "full delta fp16 bytes",
+      "pass": true,
+      "detail": "15230566400"
+    }
+  ]
+}
