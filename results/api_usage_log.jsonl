@@ -315,3 +315,6 @@
 {"provider": "meta-model-api", "model": "muse-wonder-1.0", "time": "2026-10-31T18:25:04Z", "purpose": "7B simple push panel review", "prompt_tokens": 1922, "completion_tokens": 4189, "total_tokens": 6111}
 {"provider": "meta-model-api", "model": "muse-spark-1.2", "time": "2026-10-31T18:25:48Z", "purpose": "7B simple push judge spark-1.2", "prompt_tokens": 1999, "completion_tokens": 7730, "total_tokens": 9729}
 {"provider": "meta-model-api", "model": "muse-spark-1.1", "time": "2026-10-31T18:26:03Z", "purpose": "7B simple push judge spark-1.1", "prompt_tokens": 1999, "completion_tokens": 6860, "total_tokens": 8859}
+{"provider": "meta-model-api", "model": "muse-wonder-1.0", "time": "2026-10-31T18:51:08Z", "purpose": "7B header guardrail check wonder substitute", "prompt_tokens": 1445, "completion_tokens": 1698, "total_tokens": 3143}
+{"provider": "meta-model-api", "model": "muse-spark-1.2", "time": "2026-10-31T18:52:28Z", "purpose": "online scan judge muse-spark-1.2", "prompt_tokens": 7979, "completion_tokens": 4922, "total_tokens": 12901}
+{"provider": "meta-model-api", "model": "muse-spark-1.1", "time": "2026-10-31T18:52:37Z", "purpose": "online scan judge muse-spark-1.1", "prompt_tokens": 7979, "completion_tokens": 3520, "total_tokens": 11499}
